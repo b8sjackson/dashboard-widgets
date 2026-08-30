@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weather</title>
+<style>
+  :root{
+    --bg:#1B1030; --bg2:#4B2E83; --accent:#C9B3FF; --accent2:#FFFFFF;
+    --ink:#F4F0FF; --muted:#A99BC7; --grid:rgba(201,179,255,0.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg)}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;
+    color:var(--ink);
+    background:
+      linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      radial-gradient(120% 90% at 0% 0%,var(--bg2),var(--bg) 70%);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+  }
+  .card{width:100%;max-width:560px;padding:20px 28px 18px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .temp{font-size:56px;font-weight:700;letter-spacing:-.04em;line-height:1;margin-top:6px;font-variant-numeric:tabular-nums}
+  .temp sup{font-size:22px;font-weight:600;color:var(--muted);vertical-align:top;margin-left:2px}
+  .cond{font-size:14px;color:var(--muted);margin-top:6px;font-weight:500}
+  .right{text-align:right;font-size:12px;color:var(--muted);line-height:1.6;font-variant-numeric:tabular-nums}
+  .right b{color:var(--ink);font-weight:600}
+  .right svg{width:52px;height:52px;display:block;margin:0 0 4px auto}
+  .hours{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:16px;padding-top:12px;border-top:1px solid var(--grid)}
+  .h{text-align:center;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .h svg{width:22px;height:22px;display:block;margin:5px auto}
+  .h b{display:block;color:var(--ink);font-size:13px;font-weight:600}
+  .rule{height:2px;margin-top:14px;background:linear-gradient(90deg,var(--accent),transparent);opacity:.8;border-radius:2px}
+  .err{font-size:12px;color:var(--muted);margin-top:10px}
+  .ic{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .ic .fill{fill:var(--accent);stroke:none;opacity:.9}
+  @media (max-width:420px){.temp{font-size:44px}.hours{grid-template-columns:repeat(3,1fr)}.card{padding:16px}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <div>
+      <div class="label">Norman, OK · Personal</div>
+      <div class="temp"><span id="t">--</span><sup>°F</sup></div>
+      <div class="cond" id="c">Loading…</div>
+    </div>
+    <div class="right">
+      <div id="bigicon"></div>
+      <div>H <b id="hi">--</b>° &nbsp; L <b id="lo">--</b>°</div>
+      <div>Wind <b id="w">--</b> mph</div>
+      <div>Humidity <b id="rh">--</b>%</div>
+    </div>
+  </div>
+  <div class="hours" id="hours"></div>
+  <div class="err" id="err" hidden></div>
+  <div class="rule"></div>
+</div>
+<script>
+(function(){
+  var LAT=35.2226,LON=-97.4395,TZ="America/Chicago";
+  var URL="https://api.open-meteo.com/v1/forecast?latitude="+LAT+"&longitude="+LON+
+    "&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day"+
+    "&hourly=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min"+
+    "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone="+encodeURIComponent(TZ)+"&forecast_days=2";
+  function icon(code,day,size){
+    var s='<svg viewBox="0 0 24 24" class="ic">';
+    var sun='<circle cx="12" cy="12" r="4" class="fill"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+    var moon='<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" class="fill"/>';
+    var cloud='<path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11a3.5 3.5 0 0 0 1 7z"/>';
+    var smallSun='<circle cx="17" cy="6" r="2.5" class="fill"/><path d="M17 1v1.5M17 9.5V11M12 6h1.5M21.5 6H23M13.5 2.5l1 1M19.5 8.5l1 1M13.5 9.5l1-1M19.5 3.5l1-1"/>';
+    var smallMoon='<path d="M21 7a3.5 3.5 0 0 1-4.5-4.5A3.5 3.5 0 1 0 21 7z" class="fill"/>';
+    var cloudLow='<path d="M6 20h9a3.5 3.5 0 0 0 .4-7A5.2 5.2 0 0 0 5.2 14 3 3 0 0 0 6 20z"/>';
+    var rain='<path d="M8 20l1-2M12 21l1-2M16 20l1-2"/>';
+    var snow='<path d="M8 19v2M12 19v2M16 19v2"/>';
+    var bolt='<path d="M13 15l-2 4h3l-2 4" class="fill"/>';
+    var fog='<path d="M4 15h16M6 19h12"/>';
+    if(code===0) s+=day?sun:moon;
+    else if(code<=2) s+=(day?smallSun:smallMoon)+cloudLow;
+    else if(code===3) s+=cloud;
+    else if(code<=48) s+=cloud+fog;
+    else if(code<=67||(code>=80&&code<=82)) s+=cloud+rain;
+    else if(code<=77||(code>=85&&code<=86)) s+=cloud+snow;
+    else s+=cloud+bolt;
+    return s+'</svg>';
+  }
+  var names={0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Icy fog",51:"Light drizzle",53:"Drizzle",55:"Heavy drizzle",56:"Freezing drizzle",57:"Freezing drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",66:"Freezing rain",67:"Freezing rain",71:"Light snow",73:"Snow",75:"Heavy snow",77:"Snow grains",80:"Showers",81:"Showers",82:"Heavy showers",85:"Snow showers",86:"Snow showers",95:"Thunderstorm",96:"Thunderstorm, hail",99:"Thunderstorm, hail"};
+  function hourLabel(iso){
+    var d=new Date(iso);var h=d.getHours();var ap=h>=12?"PM":"AM";h=h%12||12;return h+ap;
+  }
+  function render(j){
+    var c=j.current;
+    document.getElementById("t").textContent=Math.round(c.temperature_2m);
+    document.getElementById("c").textContent=names[c.weather_code]||"—";
+    document.getElementById("w").textContent=Math.round(c.wind_speed_10m);
+    document.getElementById("rh").textContent=c.relative_humidity_2m;
+    document.getElementById("hi").textContent=Math.round(j.daily.temperature_2m_max[0]);
+    document.getElementById("lo").textContent=Math.round(j.daily.temperature_2m_min[0]);
+    document.getElementById("bigicon").innerHTML=icon(c.weather_code,c.is_day);
+    var now=new Date(c.time),H=j.hourly,out="",n=0;
+    for(var i=0;i<H.time.length&&n<6;i++){
+      if(new Date(H.time[i])<=now) continue;
+      out+='<div class="h">'+hourLabel(H.time[i])+icon(H.weather_code[i],H.is_day[i])+'<b>'+Math.round(H.temperature_2m[i])+'°</b></div>';n++;
+    }
+    document.getElementById("hours").innerHTML=out;
+  }
+  function load(){
+    fetch(URL).then(function(r){return r.json()}).then(render).catch(function(e){
+      var el=document.getElementById("err");el.hidden=false;
+      el.textContent="Weather unavailable in this embed ("+e.message+").";
+      document.getElementById("c").textContent="—";
+    });
+  }
+  load();setInterval(load,15*60*1000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clock</title>
+<style>
+  :root{
+    --bg:#161D23; --bg2:#232C34; --accent:#FFE600; --accent2:#FFFFFF;
+    --ink:#F5F5F5; --muted:#9AA4AD; --grid:rgba(255,255,255,0.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg)}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;
+    color:var(--ink);
+    background:
+      linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      radial-gradient(120% 90% at 100% 0%,var(--bg2),var(--bg) 70%);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .card{
+    display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center;
+    padding:22px 30px;width:100%;max-width:520px;
+  }
+  svg{width:150px;height:150px;display:block}
+  .face{fill:none;stroke:var(--accent);stroke-width:2;opacity:.85}
+  .ring2{fill:none;stroke:var(--accent);stroke-width:1;opacity:.28}
+  .tick{stroke:var(--accent);stroke-width:2;opacity:.9}
+  .tick.minor{stroke-width:1;opacity:.35}
+  .hand{stroke:var(--ink);stroke-linecap:round}
+  .hour{stroke-width:5}
+  .min{stroke-width:3}
+  .sec{stroke:var(--accent2);stroke-width:1.5}
+  .core{fill:var(--ink)}
+  .core2{fill:var(--accent2)}
+  .text{min-width:0}
+  .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);opacity:.95;font-weight:600}
+  .time{font-size:54px;font-weight:700;letter-spacing:-.03em;line-height:1.05;margin-top:4px;font-variant-numeric:tabular-nums}
+  .time small{font-size:18px;font-weight:600;color:var(--muted);margin-left:6px;letter-spacing:.05em}
+  .date{font-size:15px;color:var(--muted);margin-top:8px;font-weight:500}
+  .sub{display:flex;gap:14px;margin-top:12px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .sub b{color:var(--ink);font-weight:600}
+  .rule{height:2px;margin-top:14px;background:linear-gradient(90deg,var(--accent),transparent);opacity:.8;border-radius:2px}
+  @media (max-width:420px){
+    .card{grid-template-columns:1fr;text-align:center;gap:12px;padding:18px}
+    svg{margin:0 auto;width:120px;height:120px}
+    .time{font-size:44px}
+    .sub{justify-content:center}
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <svg viewBox="0 0 200 200" aria-hidden="true">
+    <circle class="ring2" cx="100" cy="100" r="96"/>
+    <circle class="face" cx="100" cy="100" r="86"/>
+    <g id="ticks"></g>
+    <line id="h" class="hand hour" x1="100" y1="100" x2="100" y2="55"/>
+    <line id="m" class="hand min"  x1="100" y1="100" x2="100" y2="35"/>
+    <line id="s" class="hand sec"  x1="100" y1="110" x2="100" y2="28"/>
+    <circle class="core" cx="100" cy="100" r="5"/>
+    <circle class="core2" cx="100" cy="100" r="2"/>
+  </svg>
+  <div class="text">
+    <div class="label">Oklahoma City · EY/CPA</div>
+    <div class="time"><span id="t">--:--</span><small id="ap"></small></div>
+    <div class="date" id="d">&nbsp;</div>
+    <div class="sub"><span>Week <b id="wk">--</b></span><span>Day <b id="doy">--</b> of the year</span><span><b id="utc">--</b> UTC</span></div>
+    <div class="rule"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var TZ="America/Chicago";
+  var g=document.getElementById("ticks");
+  for(var i=0;i<60;i++){
+    var a=i*6*Math.PI/180, major=i%5===0, r1=major?74:80, r2=86;
+    var l=document.createElementNS("http://www.w3.org/2000/svg","line");
+    l.setAttribute("x1",100+r1*Math.sin(a));l.setAttribute("y1",100-r1*Math.cos(a));
+    l.setAttribute("x2",100+r2*Math.sin(a));l.setAttribute("y2",100-r2*Math.cos(a));
+    l.setAttribute("class","tick"+(major?"":" minor"));g.appendChild(l);
+  }
+  function rot(id,deg){document.getElementById(id).setAttribute("transform","rotate("+deg+" 100 100)");}
+  function parts(d){
+    var f=new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit",second:"2-digit",hour12:true,weekday:"long",month:"long",day:"numeric",year:"numeric"});
+    var o={};f.formatToParts(d).forEach(function(p){o[p.type]=p.value});return o;
+  }
+  function week(d){
+    var x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+    var day=x.getUTCDay()||7;x.setUTCDate(x.getUTCDate()+4-day);
+    var y0=new Date(Date.UTC(x.getUTCFullYear(),0,1));
+    return Math.ceil(((x-y0)/864e5+1)/7);
+  }
+  function tick(){
+    var now=new Date(),p=parts(now);
+    var h=parseInt(p.hour,10),m=parseInt(p.minute,10),s=parseInt(p.second,10);
+    document.getElementById("t").textContent=p.hour+":"+p.minute;
+    document.getElementById("ap").textContent=p.dayPeriod;
+    document.getElementById("d").textContent=p.weekday+", "+p.month+" "+p.day+", "+p.year;
+    rot("s",s*6);rot("m",m*6+s*.1);rot("h",(h%12)*30+m*.5);
+    var loc=new Date(now.toLocaleString("en-US",{timeZone:TZ}));
+    document.getElementById("wk").textContent=week(loc);
+    var y0=new Date(loc.getFullYear(),0,0);
+    document.getElementById("doy").textContent=Math.floor((loc-y0)/864e5);
+    document.getElementById("utc").textContent=String(now.getUTCHours()).padStart(2,"0")+":"+String(now.getUTCMinutes()).padStart(2,"0");
+  }
+  tick();setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>

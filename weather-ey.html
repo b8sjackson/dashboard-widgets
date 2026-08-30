@@ -10,16 +10,18 @@
     --ink:#F5F5F5; --muted:#9AA4AD; --grid:rgba(255,255,255,0.05);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:var(--bg)}
+  html,body{height:100%;background:transparent}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;
     color:var(--ink);
+  }
+  .frame{position:fixed;inset:0;border-radius:24px;overflow:hidden;display:flex;align-items:center;justify-content:center;
     background:
       linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
       linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
       radial-gradient(120% 90% at 0% 0%,var(--bg2),var(--bg) 70%);
-    display:flex;align-items:center;justify-content:center;overflow:hidden;
   }
+
   .card{width:100%;max-width:560px;padding:20px 28px 18px}
   .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
   .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
@@ -41,7 +43,7 @@
 </style>
 </head>
 <body>
-<div class="card">
+<div class="frame"><div class="card">
   <div class="top">
     <div>
       <div class="label">Oklahoma City · EY/CPA</div>
@@ -58,7 +60,7 @@
   <div class="hours" id="hours"></div>
   <div class="err" id="err" hidden></div>
   <div class="rule"></div>
-</div>
+</div></div>
 <script>
 (function(){
   var LAT=35.2226,LON=-97.4395,TZ="America/Chicago";

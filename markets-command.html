@@ -11,16 +11,18 @@
     --up:#4ADE80; --down:#F87171;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:var(--bg)}
+  html,body{height:100%;background:transparent}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;
     color:var(--ink);
+  }
+  .frame{position:fixed;inset:0;border-radius:24px;overflow:hidden;display:flex;align-items:center;justify-content:center;
     background:
       linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
       linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
       radial-gradient(120% 90% at 100% 0%,var(--bg2),var(--bg) 70%);
-    display:flex;align-items:center;justify-content:center;overflow:hidden;
   }
+
   .card{width:100%;max-width:600px;padding:16px 24px 14px}
   .top{display:flex;align-items:baseline;justify-content:space-between}
   .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
@@ -48,7 +50,7 @@
 </style>
 </head>
 <body>
-<div class="card">
+<div class="frame"><div class="card">
   <div class="top">
     <div><div class="label">Command</div><div class="title">Today's Markets</div></div>
     <div class="status" id="status"><i></i>—</div>
@@ -58,7 +60,7 @@
   <div class="err" id="err" hidden></div>
   <div class="rule"></div>
   <div class="foot"><span>US indexes · 1D</span><span id="upd"></span></div>
-</div>
+</div></div>
 <script>
 (function(){
   var TZ="America/Chicago";

@@ -10,17 +10,18 @@
     --ink:#F5F5F5; --muted:#9AA4AD; --grid:rgba(255,255,255,0.05);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:var(--bg)}
+  html,body{height:100%;background:transparent}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;
     color:var(--ink);
+  }
+  .frame{position:fixed;inset:0;border-radius:24px;overflow:hidden;display:flex;align-items:center;justify-content:center;
     background:
       linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
       linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
       radial-gradient(120% 90% at 100% 0%,var(--bg2),var(--bg) 70%);
-    display:flex;align-items:center;justify-content:center;
-    overflow:hidden;
   }
+
   .card{
     display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center;
     padding:22px 30px;width:100%;max-width:520px;
@@ -53,7 +54,7 @@
 </style>
 </head>
 <body>
-<div class="card">
+<div class="frame"><div class="card">
   <svg viewBox="0 0 200 200" aria-hidden="true">
     <circle class="ring2" cx="100" cy="100" r="96"/>
     <circle class="face" cx="100" cy="100" r="86"/>
@@ -71,7 +72,7 @@
     <div class="sub"><span>Week <b id="wk">--</b></span><span>Day <b id="doy">--</b> of the year</span><span><b id="utc">--</b> UTC</span></div>
     <div class="rule"></div>
   </div>
-</div>
+</div></div>
 <script>
 (function(){
   var TZ="America/Chicago";

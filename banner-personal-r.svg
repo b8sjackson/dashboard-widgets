@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="120" viewBox="0 0 1500 120">
+<defs><clipPath id="rc"><rect width="1500" height="120" rx="24" ry="24"/></clipPath><linearGradient id="pField" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#4B2E83"/><stop offset="0.6" stop-color="#2A1A4A"/><stop offset="1" stop-color="#120C1F"/></linearGradient>
+<linearGradient id="pRule" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+<radialGradient id="pGlow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#C9B3FF" stop-opacity="0.22"/><stop offset="1" stop-color="#C9B3FF" stop-opacity="0"/></radialGradient></defs>
+<g clip-path="url(#rc)">
+<rect width="1500" height="120" fill="#4B2E83"/>
+<rect width="1500" height="120" fill="url(#pField)"/>
+<rect x="0" y="34" width="1500" height="1" fill="url(#pRule)"><animate attributeName="x" values="0;18;0" dur="14s" repeatCount="indefinite"/></rect>
+<rect x="0" y="60" width="1500" height="1" fill="url(#pRule)"><animate attributeName="x" values="0;-14;0" dur="17s" repeatCount="indefinite"/></rect>
+<rect x="0" y="86" width="1500" height="1" fill="url(#pRule)"><animate attributeName="x" values="0;22;0" dur="20s" repeatCount="indefinite"/></rect>
+<circle cx="1290" cy="60" r="60" fill="url(#pGlow)"><animate attributeName="opacity" values="0.5;1;0.5" dur="8s" repeatCount="indefinite"/></circle>
+<circle cx="1290" cy="60" r="46" fill="none" stroke="#FFFFFF" stroke-opacity="0.10" stroke-width="1">
+  <animate attributeName="r" values="46;50;46" dur="8s" repeatCount="indefinite"/>
+  <animate attributeName="stroke-opacity" values="0.10;0.16;0.10" dur="8s" repeatCount="indefinite"/>
+</circle>
+<circle cx="1290" cy="60" r="74" fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1">
+  <animate attributeName="r" values="74;80;74" dur="8s" begin="1s" repeatCount="indefinite"/>
+</circle>
+<!-- a single slow drifting star -->
+<circle cx="200" cy="30" r="1.2" fill="#FFFFFF" fill-opacity="0.35">
+  <animate attributeName="cx" values="200;1100" dur="90s" repeatCount="indefinite"/>
+  <animate attributeName="fill-opacity" values="0;0.4;0" dur="90s" repeatCount="indefinite"/>
+</circle>
+</g>
+</svg>

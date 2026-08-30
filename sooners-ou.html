@@ -11,16 +11,18 @@
     --win:#4ADE80; --loss:#F87171;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:var(--bg)}
+  html,body{height:100%;background:transparent}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;
     color:var(--ink);
+  }
+  .frame{position:fixed;inset:0;border-radius:24px;overflow:hidden;display:flex;align-items:center;justify-content:center;
     background:
       linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
       linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
       radial-gradient(120% 90% at 0% 0%,var(--bg2),var(--bg) 70%);
-    display:flex;align-items:center;justify-content:center;overflow:hidden;
   }
+
   .card{width:100%;max-width:600px;padding:18px 26px 16px}
   .top{display:flex;align-items:center;gap:14px}
   .logo{width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
@@ -51,7 +53,7 @@
 </style>
 </head>
 <body>
-<div class="card">
+<div class="frame"><div class="card">
   <div class="top">
     <img class="logo" id="logo" alt="" src="https://a.espncdn.com/i/teamlogos/ncaa/500/201.png">
     <div>
@@ -68,7 +70,7 @@
   <div class="err" id="err" hidden></div>
   <div class="rule"></div>
   <div class="foot"><span id="season">2026 season</span><span id="upd"></span></div>
-</div>
+</div></div>
 <script>
 (function(){
   var TEAM="201", TZ="America/Chicago";

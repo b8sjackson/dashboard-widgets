@@ -66,10 +66,17 @@
   var QURL="https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols="+encodeURIComponent(SYMS.map(function(x){return x.s}).join("|"))+"&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json";
   var selected=".SPX", quotes={};
   function num(s){return parseFloat(String(s).replace(/[,%]/g,""))}
+  function fmt(s,dec){var v=num(s); if(isNaN(v)) return s; return v.toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+  function mktState(){
+    var p=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"short",hour:"numeric",minute:"numeric",hour12:false}).formatToParts(new Date());
+    var o={}; p.forEach(function(x){o[x.type]=x.value}); var wd=o.weekday, m=(+o.hour%24)*60+(+o.minute);
+    if(wd==="Sat"||wd==="Sun") return "closed";
+    if(m>=570&&m<960) return "open"; if(m>=240&&m<570) return "pre"; if(m>=960&&m<1200) return "post"; return "closed";
+  }
   function renderRows(){
     var html="";
     SYMS.forEach(function(x){ var q=quotes[x.s]; if(!q) return; var c=num(q.change), dir=c>0?"up":(c<0?"down":""), arrow=c>0?"↑":(c<0?"↓":"→");
-      html+='<div class="row'+(x.s===selected?' on':'')+'" data-s="'+x.s+'"><div class="nm '+dir+'"><span class="arrow">'+arrow+'</span>'+x.n+'</div><div class="last">'+q.last+'</div><div class="chg '+dir+'">'+(c>0?'+':'')+q.change+'</div><div class="pct '+dir+'">'+(c>0?'+':'')+q.change_pct+'</div></div>'; });
+      html+='<div class="row'+(x.s===selected?' on':'')+'" data-s="'+x.s+'"><div class="nm '+dir+'"><span class="arrow">'+arrow+'</span>'+x.n+'</div><div class="last">'+fmt(q.last,2)+'</div><div class="chg '+dir+'">'+(c>0?'+':'')+fmt(q.change,2)+'</div><div class="pct '+dir+'">'+(c>0?'+':'')+fmt(q.change_pct,2)+'%</div></div>'; });
     var rows=document.getElementById("rows"); rows.innerHTML=html;
     [].forEach.call(rows.querySelectorAll(".row"),function(r){ r.addEventListener("click",function(){ selected=r.getAttribute("data-s"); renderRows(); loadChart(); }); });
   }
@@ -98,8 +105,8 @@
   function load(){
     fetch(QURL).then(function(r){return r.json()}).then(function(j){
       var list=j.FormattedQuoteResult.FormattedQuote; list.forEach(function(q){quotes[q.symbol]=q;});
-      var st=(list[1]||list[0]).curmktstatus||""; var open=st==="REG_MKT"; var el=document.getElementById("status");
-      el.className="status"+(open?" open":""); el.innerHTML='<i></i>'+(open?"Market open":(st==="PRE_MKT"?"Pre-market":(st==="POST_MKT"?"After hours":"Market closed")));
+      var el=document.getElementById("status"); var ms=mktState(); var open=ms==="open";
+      el.className="status"+(open?" open":""); el.innerHTML='<i></i>'+(open?"Market open":(ms==="pre"?"Pre-market":(ms==="post"?"After hours":"Market closed")));
       renderRows(); loadChart();
       document.getElementById("upd").textContent="CNBC · "+new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}).format(new Date());
       document.getElementById("err").hidden=true;

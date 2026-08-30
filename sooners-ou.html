@@ -99,6 +99,7 @@
   }
   function render(team, sched){
     var rankNum=team.rank||null;
+    if(!rankNum){ (sched.events||[]).some(function(e){ var us=e.competitions[0].competitors.find(function(c){return c.team.id===TEAM}); var r=us&&us.curatedRank&&us.curatedRank.current; if(r&&r<=25){rankNum=r;return true;} return false; }); }
     document.getElementById("rank").innerHTML=rankNum?'<sup>#</sup>'+rankNum:'<sup></sup>NR';
     var rec=(team.record&&team.record.items&&team.record.items[0]&&team.record.items[0].summary)||"0-0";
     document.getElementById("rec").textContent=rec.replace("-","–");

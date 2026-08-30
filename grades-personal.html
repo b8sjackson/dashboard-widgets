@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grades</title>
+<style>
+  :root{
+    --bg:#1B1030; --bg2:#4B2E83; --accent:#C9B3FF; --accent2:#FFFFFF;
+    --ink:#F4F0FF; --muted:#A99BC7; --grid:rgba(201,179,255,0.08);
+    --good:#4ADE80; --warn:#FBBF24; --bad:#F87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#191919}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;color:var(--ink)}
+  .frame{position:fixed;inset:0;border-radius:24px;overflow:hidden;
+    background:
+      linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      radial-gradient(120% 90% at 100% 0%,var(--bg2),var(--bg) 70%);
+  }
+  .scroll{position:absolute;inset:0;overflow:auto;padding:16px 22px 14px;display:flex;flex-direction:column}
+  #body{flex:1}
+  .scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .title{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-top:2px}
+  .gpa{text-align:right;font-variant-numeric:tabular-nums}
+  .gpa .n{font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1}
+  .gpa .n small{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.08em;margin-left:4px}
+  .gpa .s{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:4px}
+  .tabs{display:flex;gap:4px;margin-top:12px;border-bottom:1px solid var(--grid);padding-bottom:8px;flex-wrap:wrap}
+  .tab{font-size:11px;font-weight:600;letter-spacing:.04em;padding:5px 10px;border-radius:999px;cursor:pointer;color:var(--muted);border:1px solid transparent;white-space:nowrap}
+  .tab:hover{color:var(--ink)}
+  .tab.on{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+  .rows{margin-top:6px}
+  .row{display:grid;grid-template-columns:1.5fr 1.4fr .5fr .7fr;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--grid);cursor:pointer;border-radius:6px;font-variant-numeric:tabular-nums}
+  .row:last-child{border-bottom:none}
+  .row:hover{background:rgba(255,255,255,.05)}
+  .row .nm{font-size:13px;font-weight:700}
+  .row .nm small{display:block;font-size:10px;color:var(--muted);font-weight:500;margin-top:2px;letter-spacing:.04em}
+  .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}
+  .bar i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:var(--accent)}
+  .bar.g i{background:var(--good)}.bar.w i{background:var(--warn)}.bar.b i{background:var(--bad)}
+  .pct{font-size:14px;font-weight:700;text-align:right}
+  .pct.none{color:var(--muted);font-size:11px;font-weight:600}
+  .letter{display:inline-block;min-width:30px;text-align:center;font-size:12px;font-weight:800;padding:3px 7px;border-radius:7px;background:rgba(255,255,255,.08);color:var(--ink);justify-self:end}
+  .letter.A{background:rgba(74,222,128,.18);color:var(--good)}.letter.B{background:rgba(56,214,245,.18);color:#7DD3FC}.letter.C{background:rgba(251,191,36,.18);color:var(--warn)}.letter.D,.letter.F{background:rgba(248,113,113,.18);color:var(--bad)}
+  .letter.x{font-size:9px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  .rule{height:2px;margin-top:10px;background:linear-gradient(90deg,var(--accent),transparent);opacity:.8;border-radius:2px}
+  .foot{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:8px;letter-spacing:.04em}
+  /* class view */
+  .hero{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-top:12px}
+  .big{font-size:46px;font-weight:700;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+  .big sup{font-size:16px;color:var(--muted);font-weight:600;vertical-align:top;margin-left:2px}
+  .meta{font-size:12px;color:var(--muted);line-height:1.7}
+  .meta b{color:var(--ink);font-weight:600}
+  .meta .letter{justify-self:start;margin-right:6px;vertical-align:middle}
+  .sec{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:14px 0 6px}
+  .cat{display:grid;grid-template-columns:1.6fr .5fr 1.2fr .8fr;align-items:center;gap:10px;padding:7px 6px;border-bottom:1px solid var(--grid);font-variant-numeric:tabular-nums;font-size:12px}
+  .cat:last-child{border-bottom:none}
+  .cat .cn{font-weight:600}.cat .cn small{display:block;color:var(--muted);font-weight:500;font-size:10px;margin-top:1px}
+  .cat .w{text-align:right;font-weight:700}
+  .cat .pts{color:var(--muted);text-align:right}
+  .cat .pts b{color:var(--ink);font-weight:600}
+  .src{font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(255,255,255,.08);color:var(--muted);justify-self:end}
+  .src.Syllabus{color:var(--accent);background:rgba(255,255,255,.06)}
+  .src.Unknown{color:var(--warn)}
+  .item{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:6px 6px;border-bottom:1px solid var(--grid);font-size:12px;font-variant-numeric:tabular-nums}
+  .item:last-child{border-bottom:none}
+  .item .in{font-weight:600}.item .in small{display:block;color:var(--muted);font-weight:500;font-size:10px}
+  .item .sc{font-weight:700}.item .sc small{color:var(--muted);font-weight:500}
+  .flag{font-size:11px;color:var(--muted);padding:5px 8px;border-left:2px solid var(--warn);margin:4px 0;line-height:1.45}
+  .empty{font-size:12px;color:var(--muted);padding:8px 6px}
+  .err{font-size:12px;color:var(--muted);margin-top:8px}
+  a{color:var(--accent);text-decoration:none}
+  @media (max-width:520px){.row{grid-template-columns:1.4fr 1fr .6fr}.row .pct{display:none}.cat{grid-template-columns:1.5fr .5fr 1fr}.cat .src{display:none}.big{font-size:38px}}
+</style>
+</head>
+<body>
+<div class="frame"><div class="scroll">
+  <div class="top">
+    <div><div class="label">Personal · <span id="term">Fall 2026</span></div><div class="title" id="ttl">Grades</div></div>
+    <div class="gpa"><div class="n"><span id="gpa">–</span><small>GPA</small></div><div class="s" id="gpas">semester</div></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div id="body"></div>
+  <div class="err" id="err" hidden></div>
+  <div class="rule"></div>
+  <div class="foot"><span id="src">Notion · Canvas</span><span id="upd"></span></div>
+</div></div>
+<script>
+(function(){
+  // Live source: newest grades.json in a shared Drive folder (written by the scheduled grade refresh).
+  // Fallback: grades.json beside this file on GitHub Pages.
+  var DRIVE={key:"", folder:""};
+  var TZ="America/Chicago";
+  var q=new URLSearchParams(location.search);
+  var COMPACT=q.get("view")==="compact";
+  var data=null, sel="all";
+  var GP={A:4,B:3,C:2,D:1,F:0};
+  function letterKey(l){ if(!l) return "x"; var c=String(l).trim().charAt(0).toUpperCase(); return GP.hasOwnProperty(c)&&String(l).length<=2?c:"x"; }
+  function fmtPct(v){ return v==null?null:(Math.round(v*10)/10).toString(); }
+  function barClass(v){ return v==null?"":(v>=90?"g":(v>=80?"":(v>=70?"w":"b"))); }
+  function fmtDate(s){ if(!s) return ""; var d=new Date(s+(s.length===10?"T12:00:00":"")); return new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",timeZone:TZ}).format(d); }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}); }
+
+  function gpa(){
+    var pts=0,hrs=0,n=0;
+    data.courses.forEach(function(c){ var k=letterKey(c.letter); if(k!=="x"){ pts+=GP[k]*(c.credits||3); hrs+=(c.credits||3); n++; } });
+    var total=data.courses.reduce(function(a,c){return a+(c.credits||3)},0);
+    document.getElementById("gpa").textContent = hrs? (pts/hrs).toFixed(2) : "–";
+    document.getElementById("gpas").textContent = n+" of "+data.courses.length+" graded · "+total+" hrs";
+  }
+  function tabs(){
+    var t=document.getElementById("tabs");
+    if(COMPACT){ t.style.display="none"; return; }
+    var html='<div class="tab'+(sel==="all"?" on":"")+'" data-k="all">All classes</div>';
+    data.courses.forEach(function(c){ html+='<div class="tab'+(sel===c.id?" on":"")+'" data-k="'+c.id+'">'+esc(c.short)+'</div>'; });
+    t.innerHTML=html;
+    [].forEach.call(t.querySelectorAll(".tab"),function(el){ el.addEventListener("click",function(){ sel=el.getAttribute("data-k"); render(); }); });
+  }
+  function allView(){
+    var html='<div class="rows">';
+    data.courses.forEach(function(c){
+      var k=letterKey(c.letter), g=c.grade, gp=fmtPct(c.gradedPct);
+      var sub = c.mode==="Unknown"?"no Canvas data":(gp==null?"":gp+"% of course graded")+(c.mode==="Points"&&c.points?" · "+c.points+" pts":"");
+      html+='<div class="row" data-k="'+c.id+'">'+
+        '<div class="nm">'+esc(c.name)+'<small>'+esc(sub)+'</small></div>'+
+        '<div class="bar '+barClass(g)+'"><i style="width:'+(g==null?0:Math.max(0,Math.min(100,g)))+'%"></i></div>'+
+        '<div class="pct'+(g==null?" none":"")+'">'+(g==null?"—":fmtPct(g))+'</div>'+
+        '<span class="letter '+k+'">'+esc(k==="x"?(c.mode==="Unknown"?"n/a":"tbd"):c.letter)+'</span></div>';
+    });
+    html+='</div>';
+    var b=document.getElementById("body"); b.innerHTML=html;
+    if(!COMPACT) [].forEach.call(b.querySelectorAll(".row"),function(r){ r.addEventListener("click",function(){ sel=r.getAttribute("data-k"); render(); }); });
+  }
+  function classView(c){
+    var k=letterKey(c.letter), g=c.grade, gp=fmtPct(c.gradedPct);
+    var html='<div class="hero"><div class="big">'+(g==null?'<span style="color:var(--muted);font-size:28px">'+esc(c.mode==="Unknown"?"No data":"Not graded")+'</span>':fmtPct(g)+'<sup>%</sup>')+'</div>'+
+      '<div class="meta"><span class="letter '+k+'">'+esc(k==="x"?"tbd":c.letter)+'</span><b>'+esc(c.full||c.name)+'</b><br>'+esc(c.prof||"")+' · '+(c.credits||3)+' hrs · '+esc(c.mode)+(c.points?" out of "+c.points:"")+'<br>'+
+      (gp==null?"":'<b>'+gp+'%</b> of the course graded so far')+(c.cutoffs?' · cutoffs '+esc(c.cutoffs):'')+'</div></div>';
+    if(c.flags&&c.flags.length){ html+='<div class="sec">Watch</div>'; c.flags.forEach(function(f){ html+='<div class="flag">'+esc(f)+'</div>'; }); }
+    html+='<div class="sec">Categories</div>';
+    (c.categories||[]).forEach(function(x){
+      var pts = x.total==null?"":(x.earned!=null?'<b>'+x.earned+'</b> / '+x.graded+' graded · '+x.total+' total':x.total+' pts');
+      var st = x.standing!=null?'<b>'+fmtPct(x.standing)+'%</b>':'';
+      html+='<div class="cat"><div class="cn">'+esc(x.name)+(x.note?'<small>'+esc(x.note)+'</small>':'')+'</div>'+
+        '<div class="w">'+(x.weight==null?"?":fmtPct(x.weight)+'%')+'</div>'+
+        '<div class="pts">'+(st?st+' · ':'')+pts+'</div>'+
+        '<span class="src '+esc(x.source)+'">'+esc(x.source)+'</span></div>';
+    });
+    html+='<div class="sec">Graded</div>';
+    if(c.graded&&c.graded.length){
+      c.graded.slice().sort(function(a,b){return (b.date||"")<(a.date||"")?-1:1}).forEach(function(i){
+        html+='<div class="item"><div class="in">'+(i.link?'<a href="'+esc(i.link)+'" target="_blank" rel="noopener">'+esc(i.item)+'</a>':esc(i.item))+'<small>'+esc(i.category||"")+'</small></div>'+
+          '<div class="sc">'+i.earned+'<small> / '+i.possible+'</small></div><div class="sc" style="color:'+(i.pct>=90?'var(--good)':(i.pct>=70?'var(--warn)':'var(--bad)'))+'">'+fmtPct(i.pct)+'%<small> · '+fmtDate(i.date)+'</small></div></div>';
+      });
+    } else html+='<div class="empty">Nothing graded yet.</div>';
+    document.getElementById("body").innerHTML=html;
+  }
+  function render(){
+    tabs();
+    document.getElementById("ttl").textContent = sel==="all"?"Grades":"Grades";
+    if(sel==="all") allView(); else { var c=data.courses.filter(function(x){return x.id===sel})[0]; if(c) classView(c); else { sel="all"; allView(); } }
+  }
+  function show(j){
+    data=j; document.getElementById("term").textContent=j.term||"";
+    gpa(); render();
+    document.getElementById("src").textContent=(j.source||"Notion")+" · Canvas";
+    document.getElementById("upd").textContent="Updated "+new Intl.DateTimeFormat("en-US",{timeZone:TZ,month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(j.updated));
+    document.getElementById("err").hidden=true;
+  }
+  function loadLocal(){ return fetch("grades.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}); }
+  function loadDrive(){
+    if(!DRIVE.key||DRIVE.key.indexOf("__")===0) return Promise.reject(new Error("no drive"));
+    var list="https://www.googleapis.com/drive/v3/files?q="+encodeURIComponent("'"+DRIVE.folder+"' in parents and name='grades.json' and trashed=false")+"&orderBy=modifiedTime desc&fields=files(id,modifiedTime)&pageSize=1&key="+DRIVE.key;
+    return fetch(list).then(function(r){return r.json()}).then(function(j){
+      if(!j.files||!j.files.length) throw new Error("no file");
+      return fetch("https://www.googleapis.com/drive/v3/files/"+j.files[0].id+"?alt=media&key="+DRIVE.key).then(function(r){return r.json()});
+    });
+  }
+  function load(){
+    loadDrive().then(show).catch(function(){ loadLocal().then(show).catch(function(e){ var el=document.getElementById("err"); el.hidden=false; el.textContent="Grades unavailable right now ("+e.message+")."; }); });
+  }
+  load(); setInterval(load, 10*60*1000);
+})();
+</script>
+</body>
+</html>

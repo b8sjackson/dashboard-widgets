@@ -1,0 +1,331 @@
+{
+ "updated": "2026-08-30T05:27:17Z",
+ "term": "Fall 2026",
+ "source": "Notion snapshot",
+ "courses": [
+  {
+   "id": "488823",
+   "name": "AIS",
+   "short": "AIS",
+   "full": "Accounting Information Systems (ACCT 3353)",
+   "prof": "A. Davis",
+   "credits": 3,
+   "mode": "Points",
+   "points": 1030,
+   "grade": null,
+   "letter": "not yet graded",
+   "gradedPct": 0,
+   "refreshed": "2026-08-29",
+   "canvas": "https://canvas.ou.edu/courses/488823",
+   "cutoffs": "A 928 / B 825 / C 722 / D 619 (points)",
+   "flags": [
+    "Canvas % is wrong all semester: grade is by total points, not the Canvas percentage.",
+    "Exams & Technical Quizzes (660 pts) are not in Canvas at all."
+   ],
+   "categories": [
+    {
+     "name": "Exams & Technical Quizzes",
+     "weight": 64.1,
+     "source": "Syllabus",
+     "total": 660,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Ch 3 Tech Quiz 80, Midterm 220, SQL Tech Quiz 95, Final 265. Not in Canvas."
+    },
+    {
+     "name": "Homework & Assignments",
+     "weight": 27.4,
+     "source": "Syllabus",
+     "total": 282,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "13 items."
+    },
+    {
+     "name": "Quizzes",
+     "weight": 5.3,
+     "source": "Syllabus",
+     "total": 55,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Two lowest dropped (not ETL or Technical quizzes)."
+    },
+    {
+     "name": "Participation",
+     "weight": 3.2,
+     "source": "Syllabus",
+     "total": 33,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": ""
+    },
+    {
+     "name": "Extra Credit",
+     "weight": 0,
+     "source": "Syllabus",
+     "total": 25,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Bonus on top of the 1030 base."
+    }
+   ],
+   "graded": []
+  },
+  {
+   "id": "493512",
+   "name": "Audit",
+   "short": "Audit",
+   "full": "Auditing (ACCT 4543)",
+   "prof": "K. Jensen",
+   "credits": 3,
+   "mode": "Points",
+   "points": 470,
+   "grade": 100,
+   "letter": "A",
+   "gradedPct": 0.4,
+   "refreshed": "2026-08-29",
+   "canvas": "https://canvas.ou.edu/courses/493512",
+   "cutoffs": "90 / 80 / 70 / 60, possible slight curve. No extra credit.",
+   "flags": [
+    "Canvas Exams group is empty: 300 of 470 points are invisible there.",
+    "Canvas posts 51 participation points against a syllabus category worth 20."
+   ],
+   "categories": [
+    {
+     "name": "Exams",
+     "weight": 63.8,
+     "source": "Syllabus",
+     "total": 300,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Three at 100: Sep 24, Oct 29, final. Not in Canvas."
+    },
+    {
+     "name": "Projects",
+     "weight": 31.9,
+     "source": "Syllabus",
+     "total": 150,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Three at 50: Sep 18, Oct 23, Dec 4."
+    },
+    {
+     "name": "Participation",
+     "weight": 4.3,
+     "source": "Syllabus",
+     "total": 20,
+     "earned": 5,
+     "graded": 5,
+     "standing": 100,
+     "note": "Open book, no time limit."
+    }
+   ],
+   "graded": [
+    {
+     "item": "Participation #1: Organizations, Accounting and Financial Reporting",
+     "category": "Participation",
+     "earned": 5,
+     "possible": 5,
+     "pct": 100,
+     "date": "2026-08-26",
+     "link": "https://canvas.ou.edu/courses/493512/assignments/3614971"
+    }
+   ]
+  },
+  {
+   "id": "495355",
+   "name": "Real Estate Investments",
+   "short": "Real Estate",
+   "full": "Real Estate Investments (FIN 4213)",
+   "prof": "Tom Hooper",
+   "credits": 3,
+   "mode": "Weighted",
+   "points": null,
+   "grade": 100,
+   "letter": "A",
+   "gradedPct": 0.2,
+   "refreshed": "2026-08-29",
+   "canvas": "https://canvas.ou.edu/courses/495355",
+   "cutoffs": "Canvas default scale",
+   "flags": [
+    "Only 0.2% of the course is graded, so the 100 means very little yet.",
+    "CoStar Certification Exam (100 pts) sits in a 0%-weight group; worth confirming."
+   ],
+   "categories": [
+    {
+     "name": "Exams",
+     "weight": 80,
+     "source": "Canvas",
+     "total": 400,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Four at 100, all still placeholders in Canvas."
+    },
+    {
+     "name": "Performance Appraisal",
+     "weight": 20,
+     "source": "Canvas",
+     "total": 102,
+     "earned": 1,
+     "graded": 1,
+     "standing": 100,
+     "note": "CoStar steps 2 and 3 (1 pt each), Final Performance Appraisal 100."
+    },
+    {
+     "name": "Imported Assignments",
+     "weight": 0,
+     "source": "Canvas",
+     "total": 100,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "CoStar step 5 Certification Exam, 0% weight."
+    },
+    {
+     "name": "Not for Grade",
+     "weight": 0,
+     "source": "Canvas",
+     "total": 0,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": ""
+    }
+   ],
+   "graded": [
+    {
+     "item": "CoStar step 2: Confirming Access to eLearning",
+     "category": "Performance Appraisal",
+     "earned": 1,
+     "possible": 1,
+     "pct": 100,
+     "date": "2026-08-25",
+     "link": "https://canvas.ou.edu/courses/495355/assignments/3582616"
+    }
+   ]
+  },
+  {
+   "id": "495361",
+   "name": "Advanced Corporate Finance",
+   "short": "Adv Corp Fin",
+   "full": "Advanced Corporate Finance (FIN 4303)",
+   "prof": "M. Fathollahi",
+   "credits": 3,
+   "mode": "Weighted",
+   "points": null,
+   "grade": null,
+   "letter": "not yet graded",
+   "gradedPct": 0,
+   "refreshed": "2026-08-29",
+   "canvas": "https://canvas.ou.edu/courses/495361",
+   "cutoffs": "Canvas default scale",
+   "flags": [
+    "Homework is weighted 0% in Canvas (ten sets, 100 pts). Syllabus not yet verified.",
+    "Participation items have no due dates in Canvas; track by hand."
+   ],
+   "categories": [
+    {
+     "name": "Quiz",
+     "weight": 20,
+     "source": "Canvas",
+     "total": 40,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Ten quizzes at 4 pts."
+    },
+    {
+     "name": "Participation",
+     "weight": 20,
+     "source": "Canvas",
+     "total": 10,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Ten items at 1 pt, no due dates."
+    },
+    {
+     "name": "Exam 1",
+     "weight": 20,
+     "source": "Canvas",
+     "total": 16,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Ch 4, 7, 12, 14. Sep 23."
+    },
+    {
+     "name": "Exam 2",
+     "weight": 20,
+     "source": "Canvas",
+     "total": 15,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Ch 15, 16, 17. Oct 28."
+    },
+    {
+     "name": "Exam 3",
+     "weight": 20,
+     "source": "Canvas",
+     "total": 20,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Ch 18, 23, 24, 26, 27. Dec 15."
+    },
+    {
+     "name": "Homework",
+     "weight": 0,
+     "source": "Canvas",
+     "total": 100,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": "Weighted 0%."
+    }
+   ],
+   "graded": []
+  },
+  {
+   "id": "491566",
+   "name": "Financial Intermediaries & Markets",
+   "short": "Fin Interm",
+   "full": "Financial Intermediaries & Markets (FIN 3403)",
+   "prof": "James R. McCown",
+   "credits": 3,
+   "mode": "Unknown",
+   "points": null,
+   "grade": null,
+   "letter": "no Canvas data",
+   "gradedPct": null,
+   "refreshed": "2026-08-29",
+   "canvas": "https://canvas.ou.edu/courses/491566",
+   "cutoffs": "Unknown",
+   "flags": [
+    "Posts nothing to Canvas. Grade structure must come from the syllabus or the instructor."
+   ],
+   "categories": [
+    {
+     "name": "Structure unknown",
+     "weight": null,
+     "source": "Unknown",
+     "total": null,
+     "earned": null,
+     "graded": null,
+     "standing": null,
+     "note": ""
+    }
+   ],
+   "graded": []
+  }
+ ]
+}

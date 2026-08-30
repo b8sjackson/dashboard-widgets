@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="120" viewBox="0 0 1500 120">
+<defs>
+<linearGradient id="cField" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#080C13"/><stop offset="0.7" stop-color="#0E141F"/><stop offset="1" stop-color="#111A28"/></linearGradient>
+<linearGradient id="cRule" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#38D6F5" stop-opacity="0.7"/><stop offset="0.6" stop-color="#38D6F5" stop-opacity="0.15"/><stop offset="1" stop-color="#38D6F5" stop-opacity="0"/></linearGradient>
+<linearGradient id="cSweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#38D6F5" stop-opacity="0"/><stop offset="0.5" stop-color="#38D6F5" stop-opacity="0.10"/><stop offset="1" stop-color="#38D6F5" stop-opacity="0"/></linearGradient>
+<radialGradient id="cGlow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#38D6F5" stop-opacity="0.45"/><stop offset="1" stop-color="#38D6F5" stop-opacity="0"/></radialGradient>
+<pattern id="cGrid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M 30 0 L 0 0 0 30" fill="none" stroke="#38D6F5" stroke-opacity="0.055" stroke-width="1"/></pattern>
+<g id="cTick"><line x1="1310" y1="8" x2="1310" y2="16" stroke="#38D6F5" stroke-opacity="0.55" stroke-width="1.4"/></g>
+</defs>
+<rect width="1500" height="120" fill="#0E141F"/>
+<rect width="1500" height="120" fill="url(#cField)"/>
+<rect width="1500" height="120" fill="url(#cGrid)"/>
+<!-- slow scan sweep across the grid -->
+<rect x="-300" y="0" width="300" height="120" fill="url(#cSweep)">
+  <animateTransform attributeName="transform" type="translate" values="0 0; 1800 0; 1800 0" keyTimes="0;0.45;1" dur="26s" repeatCount="indefinite"/>
+</rect>
+<!-- reactor glow breathing -->
+<circle cx="1310" cy="60" r="56" fill="url(#cGlow)">
+  <animate attributeName="opacity" values="0.55;1;0.55" dur="4s" repeatCount="indefinite"/>
+</circle>
+<!-- inner ring, counter-rotating dash -->
+<circle cx="1310" cy="60" r="30" fill="none" stroke="#38D6F5" stroke-opacity="0.45" stroke-width="1.4"/>
+<circle cx="1310" cy="60" r="30" fill="none" stroke="#38D6F5" stroke-opacity="0.9" stroke-width="1.6" stroke-dasharray="14 174.5" stroke-linecap="round">
+  <animateTransform attributeName="transform" type="rotate" from="360 1310 60" to="0 1310 60" dur="9s" repeatCount="indefinite"/>
+</circle>
+<circle cx="1310" cy="60" r="40" fill="none" stroke="#38D6F5" stroke-opacity="0.25" stroke-width="1"/>
+<!-- ticked outer ring, slow clockwise -->
+<g>
+  <animateTransform attributeName="transform" type="rotate" from="0 1310 60" to="360 1310 60" dur="48s" repeatCount="indefinite"/>
+  <use href="#cTick" transform="rotate(0 1310 60)"/><use href="#cTick" transform="rotate(15 1310 60)"/><use href="#cTick" transform="rotate(30 1310 60)"/><use href="#cTick" transform="rotate(45 1310 60)"/><use href="#cTick" transform="rotate(60 1310 60)"/><use href="#cTick" transform="rotate(75 1310 60)"/><use href="#cTick" transform="rotate(90 1310 60)"/><use href="#cTick" transform="rotate(105 1310 60)"/><use href="#cTick" transform="rotate(120 1310 60)"/><use href="#cTick" transform="rotate(135 1310 60)"/><use href="#cTick" transform="rotate(150 1310 60)"/><use href="#cTick" transform="rotate(165 1310 60)"/><use href="#cTick" transform="rotate(180 1310 60)"/><use href="#cTick" transform="rotate(195 1310 60)"/><use href="#cTick" transform="rotate(210 1310 60)"/><use href="#cTick" transform="rotate(225 1310 60)"/><use href="#cTick" transform="rotate(240 1310 60)"/><use href="#cTick" transform="rotate(255 1310 60)"/><use href="#cTick" transform="rotate(270 1310 60)"/><use href="#cTick" transform="rotate(285 1310 60)"/><use href="#cTick" transform="rotate(300 1310 60)"/><use href="#cTick" transform="rotate(315 1310 60)"/><use href="#cTick" transform="rotate(330 1310 60)"/><use href="#cTick" transform="rotate(345 1310 60)"/>
+</g>
+<!-- core pulse -->
+<circle cx="1310" cy="60" r="9" fill="#FFFFFF" fill-opacity="0.92">
+  <animate attributeName="r" values="9;10.5;9" dur="4s" repeatCount="indefinite"/>
+</circle>
+<rect x="0" y="118" width="1500" height="2" fill="url(#cRule)"/>
+</svg>

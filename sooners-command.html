@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sooners</title>
+<style>
+  :root{
+    --bg:#0E141F; --bg2:#16263A; --accent:#38D6F5; --accent2:#FFFFFF;
+    --ink:#F2F7FB; --muted:#8FA3B8; --grid:rgba(56,214,245,0.08);
+    --win:#4ADE80; --loss:#F87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg)}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;
+    color:var(--ink);
+    background:
+      linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      radial-gradient(120% 90% at 0% 0%,var(--bg2),var(--bg) 70%);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+  }
+  .card{width:100%;max-width:600px;padding:18px 26px 16px}
+  .top{display:flex;align-items:center;gap:14px}
+  .logo{width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+  .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .team{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:2px}
+  .team small{font-size:13px;font-weight:500;color:var(--muted);margin-left:8px;letter-spacing:0}
+  .rank{margin-left:auto;text-align:right}
+  .rank .n{font-size:40px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+  .rank .n sup{font-size:18px;font-weight:600;color:var(--accent);vertical-align:top;margin-right:2px}
+  .rank .p{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+  .grid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--grid)}
+  .box .k{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .box .v{font-size:19px;font-weight:700;margin-top:4px;letter-spacing:-.01em;line-height:1.2}
+  .box .v .vs{color:var(--muted);font-weight:500;font-size:14px;margin-right:4px}
+  .box .v .r{color:var(--accent);font-weight:600;font-size:14px;margin-right:4px}
+  .box .s{font-size:12px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+  .box .s b{color:var(--ink);font-weight:600}
+  .res{font-weight:800}
+  .res.w{color:var(--win)}.res.l{color:var(--loss)}
+  .strip{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--grid);overflow:hidden}
+  .g{flex:1;min-width:0;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+  .g b{color:var(--ink);font-weight:600}
+  .g .w{color:var(--win)}.g .l{color:var(--loss)}
+  .rule{height:2px;margin-top:12px;background:linear-gradient(90deg,var(--accent),transparent);opacity:.8;border-radius:2px}
+  .foot{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:8px;letter-spacing:.04em}
+  .err{font-size:12px;color:var(--muted);margin-top:10px}
+  @media (max-width:440px){.grid{grid-template-columns:1fr}.card{padding:14px}.strip{display:none}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <img class="logo" id="logo" alt="" src="https://a.espncdn.com/i/teamlogos/ncaa/500/201.png">
+    <div>
+      <div class="label">Command</div>
+      <div class="team">Oklahoma Sooners<small id="rec">--</small></div>
+    </div>
+    <div class="rank"><div class="n" id="rank"><sup>#</sup>--</div><div class="p" id="poll">AP Poll</div></div>
+  </div>
+  <div class="grid">
+    <div class="box"><div class="k" id="nextk">Next</div><div class="v" id="next">Loading…</div><div class="s" id="nexts"></div></div>
+    <div class="box"><div class="k" id="lastk">Last</div><div class="v" id="last">—</div><div class="s" id="lasts"></div></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="err" id="err" hidden></div>
+  <div class="rule"></div>
+  <div class="foot"><span id="season">2026 season</span><span id="upd"></span></div>
+</div>
+<script>
+(function(){
+  var TEAM="201", TZ="America/Chicago";
+  var BASE="https://site.api.espn.com/apis/site/v2/sports/football/college-football/";
+  function fmtDate(iso, withTime){
+    var d=new Date(iso);
+    var o={timeZone:withTime?TZ:"UTC",weekday:"short",month:"short",day:"numeric"};
+    if(withTime){o.hour="numeric";o.minute="2-digit";}
+    var s=new Intl.DateTimeFormat("en-US",o).format(d);
+    return s.replace(",", "").replace(" AM"," AM").replace(":00 "," ");
+  }
+  function daysUntil(iso){
+    var now=new Date(), d=new Date(iso);
+    var ms=d-now; if(ms<0) return "";
+    var days=Math.floor(ms/864e5), hrs=Math.floor((ms%864e5)/36e5);
+    if(days===0) return hrs<=1?"kickoff soon":"in "+hrs+" hrs";
+    if(days===1) return "tomorrow";
+    return "in "+days+" days";
+  }
+  function oppOf(comp){
+    var us=comp.competitors.find(function(c){return c.team.id===TEAM});
+    var them=comp.competitors.find(function(c){return c.team.id!==TEAM});
+    var rank=them.curatedRank&&them.curatedRank.current<=25?them.curatedRank.current:null;
+    var where=comp.neutralSite?"neutral":(us.homeAway==="home"?"home":"away");
+    return {us:us,them:them,name:them.team.shortDisplayName||them.team.displayName,abbr:them.team.abbreviation,rank:rank,where:where,
+      tv:(comp.broadcasts||[]).map(function(b){return b.media&&b.media.shortName}).filter(Boolean).join("/"),
+      venue:comp.venue?comp.venue.fullName:""};
+  }
+  function render(team, sched){
+    var rankNum=team.rank||null;
+    document.getElementById("rank").innerHTML=rankNum?'<sup>#</sup>'+rankNum:'<sup></sup>NR';
+    var rec=(team.record&&team.record.items&&team.record.items[0]&&team.record.items[0].summary)||"0-0";
+    document.getElementById("rec").textContent=rec.replace("-","–");
+    var events=(sched.events||[]).slice().sort(function(a,b){return new Date(a.date)-new Date(b.date)});
+    var now=new Date();
+    var played=events.filter(function(e){var s=e.competitions[0].status;return s&&s.type&&s.type.completed});
+    var live=events.find(function(e){var s=e.competitions[0].status;return s&&s.type&&s.type.state==="in"});
+    var upcoming=events.filter(function(e){var s=e.competitions[0].status;return !(s&&s.type&&s.type.completed)&&e!==live});
+    // NEXT (or LIVE)
+    var nk=document.getElementById("nextk"), nv=document.getElementById("next"), ns=document.getElementById("nexts");
+    var ev=live||upcoming[0];
+    if(ev){
+      var c=ev.competitions[0], o=oppOf(c);
+      var vs=o.where==="away"?"at":(o.where==="neutral"?"vs":"vs");
+      nv.innerHTML='<span class="vs">'+vs+'</span>'+(o.rank?'<span class="r">#'+o.rank+'</span>':'')+o.name;
+      if(live){
+        nk.textContent="Live";
+        ns.innerHTML='<b>'+(o.us.score&&o.us.score.value!=null?o.us.score.value:o.us.score||0)+'–'+(o.them.score&&o.them.score.value!=null?o.them.score.value:o.them.score||0)+'</b> · '+(c.status.type.shortDetail||"")+(o.tv?' · '+o.tv:'');
+      } else {
+        nk.textContent="Next";
+        var hasTime=(ev.timeValid!==false)&&!/T00:00Z$/.test(ev.date);
+        ns.innerHTML='<b>'+fmtDate(ev.date,hasTime)+'</b>'+(hasTime?'':' · TBA')+(o.tv?' · '+o.tv:'')+(o.where==="home"?' · Norman':(o.where==="neutral"?' · Neutral':''))+(daysUntil(ev.date)?' · <i>'+daysUntil(ev.date)+'</i>':'');
+      }
+    } else { nv.textContent="Season complete"; ns.textContent=""; }
+    // LAST
+    var lv=document.getElementById("last"), ls=document.getElementById("lasts");
+    var last=played[played.length-1];
+    if(last){
+      var c2=last.competitions[0], o2=oppOf(c2);
+      var usS=+(o2.us.score&&o2.us.score.value!=null?o2.us.score.value:o2.us.score), thS=+(o2.them.score&&o2.them.score.value!=null?o2.them.score.value:o2.them.score);
+      var won=usS>thS;
+      lv.innerHTML='<span class="res '+(won?'w':'l')+'">'+(won?'W':'L')+'</span> <span style="font-variant-numeric:tabular-nums">'+usS+'–'+thS+'</span> <span class="vs">'+(o2.where==="away"?"at":"vs")+'</span>'+(o2.rank?'<span class="r">#'+o2.rank+'</span>':'')+o2.name;
+      ls.innerHTML=new Intl.DateTimeFormat("en-US",{timeZone:TZ,weekday:"short",month:"short",day:"numeric"}).format(new Date(last.date));
+    } else { lv.textContent="Season opener week"; ls.textContent="No results yet"; }
+    // STRIP: next 4 upcoming after the next one, or full season condensed
+    var strip=document.getElementById("strip"); var html="";
+    var list=upcoming.slice(ev&&!live?1:0,5);
+    if(list.length<2){ list=events.slice(0,5); }
+    list.forEach(function(e){ var c3=e.competitions[0], o3=oppOf(c3); var done=c3.status&&c3.status.type&&c3.status.type.completed; var t="";
+      if(done){ var a=+(o3.us.score.value!=null?o3.us.score.value:o3.us.score), b=+(o3.them.score.value!=null?o3.them.score.value:o3.them.score); t='<span class="'+(a>b?'w':'l')+'">'+(a>b?'W':'L')+' '+a+'–'+b+'</span> '; }
+      var tv=(e.timeValid!==false)&&!/T00:00Z$/.test(e.date); html+='<div class="g">'+t+'<b>'+(o3.where==="away"?"@ ":"")+o3.abbr+'</b> · '+new Intl.DateTimeFormat("en-US",{timeZone:tv?TZ:"UTC",month:"short",day:"numeric"}).format(new Date(e.date))+'</div>'; });
+    strip.innerHTML=html;
+    document.getElementById("season").textContent=(sched.season&&sched.season.year?sched.season.year:"")+" season · "+(team.standingSummary||"SEC");
+    document.getElementById("upd").textContent="ESPN · "+new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}).format(new Date());
+    document.getElementById("err").hidden=true;
+  }
+  function load(){
+    Promise.all([fetch(BASE+"teams/"+TEAM).then(function(r){return r.json()}), fetch(BASE+"teams/"+TEAM+"/schedule").then(function(r){return r.json()})])
+      .then(function(res){ render(res[0].team, res[1]); })
+      .catch(function(e){ var el=document.getElementById("err"); el.hidden=false; el.textContent="Live data unavailable right now ("+e.message+")."; });
+  }
+  load(); setInterval(load, 5*60*1000);
+})();
+</script>
+</body>
+</html>

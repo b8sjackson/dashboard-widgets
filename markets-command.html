@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Markets</title>
+<style>
+  :root{
+    --bg:#0E141F; --bg2:#16263A; --accent:#38D6F5; --accent2:#FFFFFF;
+    --ink:#F2F7FB; --muted:#8FA3B8; --grid:rgba(56,214,245,0.08);
+    --up:#4ADE80; --down:#F87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg)}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;
+    color:var(--ink);
+    background:
+      linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      radial-gradient(120% 90% at 100% 0%,var(--bg2),var(--bg) 70%);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+  }
+  .card{width:100%;max-width:600px;padding:16px 24px 14px}
+  .top{display:flex;align-items:baseline;justify-content:space-between}
+  .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .title{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-top:2px}
+  .status{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:middle}
+  .status.open i{background:var(--up);box-shadow:0 0 8px var(--up)}
+  .chart{position:relative;height:88px;margin-top:10px;border-top:1px solid var(--grid);border-bottom:1px solid var(--grid)}
+  .chart svg{position:absolute;inset:0;width:100%;height:100%}
+  .chart .sel{position:absolute;top:6px;left:0;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .chart .sel b{color:var(--ink)}
+  .rows{margin-top:6px}
+  .row{display:grid;grid-template-columns:1.6fr 1fr .8fr .8fr;align-items:center;gap:8px;padding:7px 6px;border-radius:6px;cursor:pointer;font-variant-numeric:tabular-nums;border-bottom:1px solid var(--grid)}
+  .row:last-child{border-bottom:none}
+  .row:hover,.row.on{background:rgba(255,255,255,.05)}
+  .row .nm{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+  .row .nm .arrow{font-size:11px}
+  .row .last{font-size:14px;font-weight:600;text-align:right}
+  .row .chg,.row .pct{font-size:13px;font-weight:600;text-align:right}
+  .up{color:var(--up)}.down{color:var(--down)}
+  .rule{height:2px;margin-top:10px;background:linear-gradient(90deg,var(--accent),transparent);opacity:.8;border-radius:2px}
+  .foot{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:8px;letter-spacing:.04em}
+  .err{font-size:12px;color:var(--muted);margin-top:8px}
+  @media (max-width:440px){.card{padding:12px}.row{grid-template-columns:1.4fr 1fr .9fr}.row .chg{display:none}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <div><div class="label">Command</div><div class="title">Today's Markets</div></div>
+    <div class="status" id="status"><i></i>—</div>
+  </div>
+  <div class="chart"><div class="sel" id="sel"></div><svg id="spark" viewBox="0 0 600 88" preserveAspectRatio="none"></svg></div>
+  <div class="rows" id="rows"></div>
+  <div class="err" id="err" hidden></div>
+  <div class="rule"></div>
+  <div class="foot"><span>US indexes · 1D</span><span id="upd"></span></div>
+</div>
+<script>
+(function(){
+  var TZ="America/Chicago";
+  var SYMS=[{s:".DJI",n:"DJIA"},{s:".SPX",n:"S&P 500"},{s:".IXIC",n:"Nasdaq"},{s:".RUT",n:"Russell 2000"},{s:".DWCF",n:"DJ Total Mkt"}];
+  var QURL="https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols="+encodeURIComponent(SYMS.map(function(x){return x.s}).join("|"))+"&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json";
+  var selected=".SPX", quotes={};
+  function num(s){return parseFloat(String(s).replace(/[,%]/g,""))}
+  function renderRows(){
+    var html="";
+    SYMS.forEach(function(x){ var q=quotes[x.s]; if(!q) return; var c=num(q.change), dir=c>0?"up":(c<0?"down":""), arrow=c>0?"↑":(c<0?"↓":"→");
+      html+='<div class="row'+(x.s===selected?' on':'')+'" data-s="'+x.s+'"><div class="nm '+dir+'"><span class="arrow">'+arrow+'</span>'+x.n+'</div><div class="last">'+q.last+'</div><div class="chg '+dir+'">'+(c>0?'+':'')+q.change+'</div><div class="pct '+dir+'">'+(c>0?'+':'')+q.change_pct+'</div></div>'; });
+    var rows=document.getElementById("rows"); rows.innerHTML=html;
+    [].forEach.call(rows.querySelectorAll(".row"),function(r){ r.addEventListener("click",function(){ selected=r.getAttribute("data-s"); renderRows(); loadChart(); }); });
+  }
+  function drawSpark(bars, prevClose){
+    var svg=document.getElementById("spark"); var W=600,H=88,pad=8;
+    var vals=bars.map(function(b){return num(b.close)}).filter(function(v){return !isNaN(v)});
+    if(!vals.length){svg.innerHTML="";return;}
+    var lo=Math.min.apply(null,vals.concat([prevClose])), hi=Math.max.apply(null,vals.concat([prevClose])); if(hi===lo){hi=lo+1;}
+    var x=function(i){return pad+(W-2*pad)*i/Math.max(1,vals.length-1)}, y=function(v){return pad+(H-2*pad)*(1-(v-lo)/(hi-lo))};
+    var d=vals.map(function(v,i){return (i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)}).join(" ");
+    var up=vals[vals.length-1]>=prevClose; var col=up?"#4ADE80":"#F87171";
+    var area=d+" L "+x(vals.length-1).toFixed(1)+" "+H+" L "+x(0)+" "+H+" Z";
+    svg.innerHTML='<defs><linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+col+'" stop-opacity="0.28"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs>'+
+      '<path d="'+area+'" fill="url(#a)"/>'+
+      '<line x1="0" x2="'+W+'" y1="'+y(prevClose).toFixed(1)+'" y2="'+y(prevClose).toFixed(1)+'" stroke="#FFFFFF" stroke-opacity="0.35" stroke-dasharray="3 4" stroke-width="1"/>'+
+      '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>'+
+      '<circle cx="'+x(vals.length-1).toFixed(1)+'" cy="'+y(vals[vals.length-1]).toFixed(1)+'" r="3" fill="'+col+'"/>';
+  }
+  function loadChart(){
+    var q=quotes[selected]; var name=(SYMS.find(function(x){return x.s===selected})||{}).n||selected;
+    document.getElementById("sel").innerHTML='<b>'+name+'</b> · 1D';
+    fetch("https://ts-api.cnbc.com/harmony/app/charts/1D.json?symbol="+encodeURIComponent(selected)).then(function(r){return r.json()}).then(function(j){
+      var bars=(j.barData&&j.barData.priceBars)||[]; drawSpark(bars, q?num(q.previous_day_closing):num(bars[0]&&bars[0].open));
+    }).catch(function(){ document.getElementById("spark").innerHTML=""; });
+  }
+  function load(){
+    fetch(QURL).then(function(r){return r.json()}).then(function(j){
+      var list=j.FormattedQuoteResult.FormattedQuote; list.forEach(function(q){quotes[q.symbol]=q;});
+      var st=(list[1]||list[0]).curmktstatus||""; var open=st==="REG_MKT"; var el=document.getElementById("status");
+      el.className="status"+(open?" open":""); el.innerHTML='<i></i>'+(open?"Market open":(st==="PRE_MKT"?"Pre-market":(st==="POST_MKT"?"After hours":"Market closed")));
+      renderRows(); loadChart();
+      document.getElementById("upd").textContent="CNBC · "+new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}).format(new Date());
+      document.getElementById("err").hidden=true;
+    }).catch(function(e){ var el=document.getElementById("err"); el.hidden=false; el.textContent="Market data unavailable right now ("+e.message+")."; });
+  }
+  load(); setInterval(load, 60*1000);
+})();
+</script>
+</body>
+</html>

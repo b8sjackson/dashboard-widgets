@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class</title>
+<style>
+  :root{--bg:#12304F;--bg2:#2F6FB5;--accent:#BFDCFF;--ink:#FFFFFF;--muted:#B9C7D8;--grid:rgba(255,255,255,0.07);--good:#4ADE80;--warn:#FBBF24}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#191919}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;color:var(--ink)}
+  .frame{position:fixed;inset:0;border-radius:24px;overflow:hidden;
+    background:linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,radial-gradient(120% 90% at 0% 0%,var(--bg2),var(--bg) 70%)}
+  .scroll{position:absolute;inset:0;overflow:auto;padding:16px 20px 14px;display:flex;flex-direction:column;gap:10px}
+  .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .title{font-size:19px;font-weight:700;letter-spacing:-.02em;margin-top:2px;line-height:1.2}
+  .pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.12);color:var(--ink)}
+  .pill.live{background:rgba(74,222,128,.2);color:var(--good)}
+  .pill.soon{background:rgba(251,191,36,.2);color:var(--warn)}
+  .next{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.18);border:1px solid var(--grid)}
+  .cd{font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;min-width:96px}
+  .cd small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:4px}
+  .nx{font-size:12px;color:var(--muted);line-height:1.6}.nx b{color:var(--ink);font-weight:600;font-size:13px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .card{padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.14);border:1px solid var(--grid);font-size:12px;line-height:1.55;color:var(--muted)}
+  .card b{display:block;color:var(--ink);font-weight:600}
+  .card .k{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:3px}
+  .links{display:flex;flex-wrap:wrap;gap:6px}
+  .links a{font-size:11px;font-weight:600;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.1);color:var(--ink);text-decoration:none;border:1px solid transparent}
+  .links a:hover{border-color:var(--accent);color:var(--accent)}
+  .foot{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-top:auto;padding-top:6px;border-top:1px solid var(--grid)}
+  .clock{font-variant-numeric:tabular-nums}
+  @media (max-width:420px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="frame"><div class="scroll">
+  <div><div class="label" id="lbl"></div><div class="title" id="ttl"></div></div>
+  <div class="next"><div class="cd"><span id="cd">–</span><small id="cds">next class</small></div><div class="nx" id="nx"></div></div>
+  <div class="grid">
+    <div class="card"><div class="k">Instructor</div><b id="prof"></b><span id="email"></span></div>
+    <div class="card"><div class="k">Office hours</div><b id="oh"></b><span id="office"></span></div>
+  </div>
+  <div class="links" id="links"></div>
+  <div class="foot"><span id="sched"></span><span class="clock" id="clk"></span></div>
+</div></div>
+<script>
+(function(){
+  var TZ="America/Chicago";
+  var C={
+    "488823":{short:"AIS",code:"ACCT 3353",name:"Accounting Information Systems",prof:"Dr. Ashley Davis",email:"adavis@ou.edu",office:"Adams Hall 203a (or Zoom)",oh:"11:00–1:00, days TBC",days:[2,4],start:"12:00",end:"13:15",canvas:"https://canvas.ou.edu/courses/488823",drive:"https://drive.google.com/drive/folders/1hN4zzMfjK1OqeWvz7ZLmcWXXJaFZ0oaQ",syllabus:"https://drive.google.com/file/d/1SJ9XK2EFMfKf9EnVDISCOUhaiPutZSwg/view",claude:"https://claude.ai/project/01a031d8-edaa-7257-b030-2438b1613115",th:{bg:"#12304F",bg2:"#2F6FB5",accent:"#BFDCFF",muted:"#B9C7D8"}},
+    "493512":{short:"Audit",code:"ACCT 4543",name:"Auditing",prof:"Dr. Kevan Jensen, CPA, CFE",email:"kjensen@ou.edu",office:"Adams Hall 200A",oh:"Fri 10:00–12:00",days:[2,4],start:"13:30",end:"14:45",canvas:"https://canvas.ou.edu/courses/493512",drive:"https://drive.google.com/drive/folders/1YqKpUXDFgYzaQq22q9Go2GdIg3rgqpli",syllabus:"https://drive.google.com/file/d/1M6ZOsJ43nVWeFVjnDDUX_4PqfkGHb2uh/view",claude:"https://claude.ai/project/01a031dc-1375-7326-91e6-e67b67613902",th:{bg:"#173A22",bg2:"#3B7F4A",accent:"#C8F0D0",muted:"#B5CBBB"}},
+    "495361":{short:"Adv Corp Fin",code:"FIN 4303",name:"Advanced Corporate Finance",prof:"Dr. M. Fathollahi",email:"mfathollahi@ou.edu",office:"",oh:"By appointment",days:[2,4],start:"15:00",end:"16:15",canvas:"https://canvas.ou.edu/courses/495361",drive:"https://drive.google.com/drive/folders/1VTtZa3AHNYrJBy8yM8gAT-LIGnLUfSXy",syllabus:"https://drive.google.com/file/d/16-4T6pdrn951rAkuWWM06zMzcAtiZ61L/view",claude:"https://claude.ai/project/01a031de-71a1-7043-99fa-c74b75f11bf1",th:{bg:"#2E2050",bg2:"#6B4FA0",accent:"#DCCBFF",muted:"#C4B8DA"}},
+    "495355":{short:"Real Estate",code:"FIN 4213",name:"Real Estate Investments",prof:"Mr. Tom Hooper",email:"tom.hooper@ou.edu",office:"Adams Hall 3251a",oh:"Weekdays 1:30–2:30",days:[2,4],start:"16:30",end:"17:45",canvas:"https://canvas.ou.edu/courses/495355",drive:"https://drive.google.com/drive/folders/16PPAHgmmW5UKhhPAJOaV9WgL0KBSgBvY",syllabus:"https://drive.google.com/file/d/1dehuoFlNF9GbjUadi7ILpL7XASWni-Jv/view",claude:"https://claude.ai/project/01a031dd-3d91-7147-a4d7-8848565fdbc1",th:{bg:"#5A3016",bg2:"#C0743B",accent:"#FFE0C2",muted:"#E3C8B3"}},
+    "491566":{short:"Fin Interm",code:"FIN 3403",name:"Financial Intermediaries & Markets",prof:"Dr. James McCown",email:"James.R.McCown-1@ou.edu",office:"Price Hall 3251",oh:"Tue/Thu 10:30–11:30",days:[2,4],start:"09:00",end:"10:15",canvas:"https://canvas.ou.edu/courses/491566",drive:"https://drive.google.com/drive/folders/11W-PdtPtr1ZAusFdRue9Z9Dp8FU3SAaY",syllabus:"",claude:"https://claude.ai/project/01a031dc-cfdf-70f4-89d0-b1cf8da2b97f",th:{bg:"#4D1A2E",bg2:"#A83E63",accent:"#FFD0E0",muted:"#E0BAC8"}}
+  };
+  var TERM_END=new Date("2026-12-12T00:00:00-06:00");
+  var q=new URLSearchParams(location.search), id=q.get("c")||"488823", c=C[id]||C["488823"];
+  var r=document.documentElement.style; r.setProperty("--bg",c.th.bg); r.setProperty("--bg2",c.th.bg2); r.setProperty("--accent",c.th.accent); r.setProperty("--muted",c.th.muted);
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]});}
+  document.getElementById("lbl").textContent=c.code+" · "+c.short;
+  document.getElementById("ttl").textContent=c.name;
+  document.getElementById("prof").textContent=c.prof;
+  document.getElementById("email").innerHTML='<a style="color:var(--accent);text-decoration:none" href="mailto:'+esc(c.email)+'">'+esc(c.email)+'</a>';
+  document.getElementById("oh").textContent=c.oh||"—";
+  document.getElementById("office").textContent=c.office||"";
+  var L=[["Canvas",c.canvas],["Drive folder",c.drive],["Syllabus",c.syllabus],["Claude project",c.claude]].filter(function(x){return x[1]});
+  document.getElementById("links").innerHTML=L.map(function(x){return '<a href="'+esc(x[1])+'" target="_blank" rel="noopener">'+esc(x[0])+'</a>'}).join("");
+  document.getElementById("sched").textContent="Tue & Thu · "+fmt12(c.start)+"–"+fmt12(c.end)+" CT";
+
+  function fmt12(hm){var p=hm.split(":"),h=+p[0],m=p[1];var ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+m+" "+ap;}
+  // Central-time parts of an instant
+  function parts(d){var f=new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour12:false,weekday:"short",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).formatToParts(d),o={};f.forEach(function(x){o[x.type]=x.value});return o;}
+  function offsetMin(d){var p=parts(d);var asUTC=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour%24,+p.minute,+p.second);return Math.round((asUTC-d.getTime())/60000);}
+  // Build the Date for a Central wall-clock time on a given Central calendar day
+  function atCentral(y,m,d,hm){var p=hm.split(":");var guess=new Date(Date.UTC(y,m-1,d,+p[0],+p[1]));var off=offsetMin(guess);var real=new Date(guess.getTime()-off*60000);var off2=offsetMin(real);if(off2!==off) real=new Date(guess.getTime()-off2*60000);return real;}
+  var DOW={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+  function nextSession(now){
+    var p=parts(now); var y=+p.year,m=+p.month,d=+p.day;
+    for(var i=0;i<14;i++){
+      var day=new Date(Date.UTC(y,m-1,d+i,12));
+      var pp=parts(day); var dow=DOW[pp.weekday];
+      if(c.days.indexOf(dow)<0) continue;
+      var s=atCentral(+pp.year,+pp.month,+pp.day,c.start), e=atCentral(+pp.year,+pp.month,+pp.day,c.end);
+      if(e>now) return {start:s,end:e};
+    }
+    return null;
+  }
+  function two(n){return (n<10?"0":"")+n}
+  function tick(){
+    var now=new Date();
+    document.getElementById("clk").textContent=new Intl.DateTimeFormat("en-US",{timeZone:TZ,weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(now);
+    var cd=document.getElementById("cd"), cds=document.getElementById("cds"), nx=document.getElementById("nx");
+    if(now>TERM_END){cd.textContent="Done";cds.textContent="semester over";nx.innerHTML="<b>Fall 2026 is complete.</b>";return;}
+    var s=nextSession(now); if(!s){cd.textContent="–";return;}
+    var dayStr=new Intl.DateTimeFormat("en-US",{timeZone:TZ,weekday:"long",month:"short",day:"numeric"}).format(s.start);
+    if(now>=s.start&&now<s.end){
+      var left=Math.max(0,s.end-now), mm=Math.floor(left/60000);
+      cd.textContent=mm+"m"; cds.textContent="left in class";
+      nx.innerHTML='<span class="pill live">In session</span><br><b>'+esc(dayStr)+'</b><br>'+fmt12(c.start)+' – '+fmt12(c.end)+' · ends '+new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}).format(s.end);
+      return;
+    }
+    var ms=s.start-now, days=Math.floor(ms/86400000), h=Math.floor(ms%86400000/3600000), mi=Math.floor(ms%3600000/60000);
+    var soon=ms<3600000;
+    cd.textContent= days>0 ? days+"d "+h+"h" : (h>0? h+"h "+two(mi)+"m" : mi+"m");
+    cds.textContent="until next class";
+    var isToday=parts(s.start).day===parts(now).day&&parts(s.start).month===parts(now).month;
+    nx.innerHTML='<span class="pill'+(soon?" soon":"")+'">'+(isToday?"Today":"Next")+'</span><br><b>'+esc(dayStr)+'</b><br>'+fmt12(c.start)+' – '+fmt12(c.end)+' CT';
+  }
+  tick(); setInterval(tick,15000);
+})();
+</script>
+</body>
+</html>

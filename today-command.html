@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Today</title>
+<style>
+  :root{
+    --bg:#0E141F; --bg2:#16263A; --accent:#38D6F5;
+    --ink:#F2F7FB; --muted:#8FA3B8; --grid:rgba(56,214,245,0.08); --line:rgba(255,255,255,.07);
+    --good:#4ADE80; --warn:#FBBF24; --bad:#F87171;
+    --ou:#E0565A; --ey:#FFE600; --cpa:#60A5FA; --personal:#C9B3FF;
+    --hr:30px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#191919}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;color:var(--ink)}
+  .frame{position:fixed;inset:0;border-radius:24px;overflow:hidden;
+    background:
+      linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      radial-gradient(120% 90% at 100% 0%,var(--bg2),var(--bg) 70%);}
+  .scroll{position:absolute;inset:0;overflow:auto;padding:16px 22px 14px}
+  .scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .title{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-top:2px}
+  .kpis{display:flex;gap:18px;text-align:right;font-variant-numeric:tabular-nums}
+  .kpi .n{font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1}
+  .kpi .s{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:4px}
+  .kpi.free .n{color:var(--good)}
+  .rule{height:2px;margin:12px 0 12px;background:linear-gradient(90deg,var(--accent),transparent);opacity:.8;border-radius:2px}
+  .wrap{display:grid;grid-template-columns:minmax(260px,1.35fr) minmax(200px,1fr);gap:18px}
+  @media (max-width:560px){.wrap{grid-template-columns:1fr}.top{flex-wrap:wrap}.title{font-size:17px;white-space:nowrap}.kpis{gap:14px;width:100%;justify-content:flex-start;text-align:left}.kpi .n{font-size:20px}}
+  /* timeline */
+  .tl{position:relative;padding-left:46px}
+  .hour{height:var(--hr);border-top:1px solid var(--line);position:relative}
+  .hour span{position:absolute;left:-46px;top:-7px;width:40px;text-align:right;font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+  .past{position:absolute;left:46px;right:0;top:0;background:rgba(0,0,0,.28);pointer-events:none;border-bottom:1px solid transparent}
+  .gap{position:absolute;left:46px;right:0;border-left:2px solid rgba(74,222,128,.55);background:linear-gradient(90deg,rgba(74,222,128,.10),rgba(74,222,128,0) 70%);font-size:10px;color:var(--good);font-weight:600;letter-spacing:.06em;padding:0 8px;text-transform:uppercase;display:flex;align-items:center;justify-content:flex-end;z-index:1}
+  .ev{position:absolute;z-index:2;border-radius:8px;padding:4px 8px;overflow:hidden;font-size:11.5px;line-height:1.25;background:rgba(56,214,245,.18);border:1px solid rgba(56,214,245,.55);box-shadow:0 2px 10px rgba(0,0,0,.25)}
+  .ev b{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ev small{color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .ev.opt{background:repeating-linear-gradient(135deg,rgba(143,163,184,.10) 0 6px,rgba(143,163,184,.04) 6px 12px);border:1px dashed rgba(143,163,184,.55);color:#C7D3DF;box-shadow:none}
+  .ev.rem{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.6)}
+  .ev.done{opacity:.45}
+  .now{position:absolute;left:40px;right:0;height:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);z-index:5}
+  .now:before{content:"";position:absolute;left:-4px;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  .now i{position:absolute;right:0;top:-16px;font-style:normal;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.04em}
+  /* side */
+  .card{border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+  .card h4{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+  .nowtxt{font-size:15px;font-weight:700}
+  .nowtxt small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+  .li{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:5px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .li:first-of-type{border-top:none}
+  .li .t{color:var(--muted);white-space:nowrap}
+  .li .g{color:var(--good);font-weight:700;white-space:nowrap}
+  .li a{color:var(--ink);text-decoration:none}.li a:hover{color:var(--accent)}
+  .pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:6px;margin-right:6px;vertical-align:1px}
+  .pill.ip{background:rgba(56,214,245,.18);color:var(--accent)}
+  .pill.td{background:rgba(255,255,255,.08);color:var(--ink)}
+  .pill.od{background:rgba(248,113,113,.18);color:var(--bad)}
+  .src{font-size:9.5px;font-weight:700;letter-spacing:.08em;white-space:nowrap}
+  .src.OU{color:var(--ou)}.src.EY{color:var(--ey)}.src.CPA{color:var(--cpa)}.src.Personal{color:var(--personal)}
+  .muted{color:var(--muted);font-size:11.5px}
+  .allday{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .allday span{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:#C7D3DF}
+  .foot{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:10px;letter-spacing:.04em}
+  .stale{color:var(--warn)}
+  #err{margin-top:8px;font-size:11px;color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="frame"><div class="scroll">
+  <div class="top">
+    <div><div class="label">Today</div><div class="title" id="title">…</div></div>
+    <div class="kpis">
+      <div class="kpi free"><div class="n" id="kFree">–</div><div class="s">Free left</div></div>
+      <div class="kpi"><div class="n" id="kBusy">–</div><div class="s">Booked</div></div>
+      <div class="kpi"><div class="n" id="kDue">–</div><div class="s">Due / Active</div></div>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <div class="allday" id="allday"></div>
+  <div class="wrap">
+    <div class="tl" id="tl"></div>
+    <div id="side"></div>
+  </div>
+  <div id="err" hidden></div>
+  <div class="foot"><span id="asof"></span><span>7 AM – 11 PM · Central</span></div>
+</div></div>
+<script>
+(function(){
+  var DRIVE={key:"AIzaSyBh-iPYjjT4gUiFqhiMz_Z1LVbofDoVPH4", folder:"1v5c6pZxj1Qg3ThIxJgTwySaXGGDI408q"};
+  var FILE="today.json", TZ="America/Chicago", START=7, END=23, MIN_GAP=30;
+  var q=new URLSearchParams(location.search);
+  var data=null;
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}); }
+  function parts(d){ var o={}; new Intl.DateTimeFormat("en-US",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(d).forEach(function(p){o[p.type]=p.value}); return o; }
+  function todayKey(){ var p=parts(q.get("d")?new Date(q.get("d")+"T12:00:00-05:00"):new Date()); return p.year+"-"+p.month+"-"+p.day; }
+  function nowMin(){ if(q.get("now")) { var s=q.get("now").split(":"); return +s[0]*60 + +s[1]; } var p=parts(new Date()); return +p.hour*60 + +p.minute; }
+  function toMin(iso){ var p=parts(new Date(iso)); return +p.hour*60 + +p.minute; }
+  function fmtT(m){ var h=Math.floor(m/60), mm=m%60, ap=h>=12&&h<24?"pm":"am", h12=h%12||12; return h12+(mm?":"+(mm<10?"0":"")+mm:"")+ap; }
+  function fmtDur(m){ var h=Math.floor(m/60), mm=m%60; return (h?h+"h":"")+(h&&mm?" ":"")+(mm||!h?mm+"m":""); }
+  function titleFor(key){ var d=new Date(key+"T12:00:00-05:00"); return new Intl.DateTimeFormat("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:TZ}).format(d); }
+  function clamp(a){ return Math.max(START*60,Math.min(END*60,a)); }
+
+  function busyBlocks(evs){
+    var b=evs.filter(function(e){return !e.optional}).map(function(e){return [clamp(e.s),clamp(e.e)]}).filter(function(x){return x[1]>x[0]}).sort(function(a,b){return a[0]-b[0]});
+    var out=[]; b.forEach(function(x){ if(out.length&&x[0]<=out[out.length-1][1]) out[out.length-1][1]=Math.max(out[out.length-1][1],x[1]); else out.push(x.slice()); });
+    return out;
+  }
+  function gapsFrom(busy, from){
+    var g=[], cur=Math.max(START*60,from);
+    busy.forEach(function(b){ if(b[1]<=cur) return; if(b[0]>cur) g.push([cur,b[0]]); cur=Math.max(cur,b[1]); });
+    if(cur<END*60) g.push([cur,END*60]);
+    return g.filter(function(x){return x[1]-x[0]>=MIN_GAP});
+  }
+  function lanes(items){
+    items.sort(function(a,b){return a.s-b.s||b.e-a.e});
+    var cluster=[], cEnd=-1, ends=[];
+    function close(){ var n=Math.max(1,ends.length); cluster.forEach(function(it){it.n=n}); cluster=[]; ends=[]; }
+    items.forEach(function(it){
+      if(it.s>=cEnd&&cluster.length) close();
+      var l=0; while(ends[l]!=null&&ends[l]>it.s) l++; it.lane=l; ends[l]=it.e;
+      cluster.push(it); cEnd=Math.max(cEnd,it.e);
+    });
+    close(); return items;
+  }
+
+  function render(){
+    var key=todayKey(), day=(data&&data.days&&data.days[key])||null, nm=nowMin(), H=30;
+    document.getElementById("title").textContent=titleFor(key);
+    var evs=[], rems=[], list=[];
+    if(day){
+      (day.events||[]).forEach(function(e){ if(e.allDay) return; var s=toMin(e.start), en=toMin(e.end); if(en<=s) en=s+30; evs.push({t:e.title,loc:e.location,s:s,e:en,optional:!!e.optional,kind:"ev"}); });
+      (day.reminders||[]).forEach(function(r){ list.push(r); if(r.time){ var s=toMin(r.time); rems.push({t:r.title,s:s,e:s+(r.minutes||30),kind:"rem",status:r.status,src:r.source,optional:true}); } });
+    }
+    // all-day chips
+    var ad=document.getElementById("allday"), chips=((day&&day.events)||[]).filter(function(e){return e.allDay}).map(function(e){return "<span>"+esc(e.title)+"</span>"});
+    ad.innerHTML=chips.join(""); ad.style.display=chips.length?"flex":"none";
+    // grid
+    var tl=document.getElementById("tl"), html="";
+    for(var h=START;h<END;h++) html+='<div class="hour"><span>'+fmtT(h*60)+'</span></div>';
+    html+='<div class="hour" style="height:0"><span>'+fmtT(END*60)+'</span></div>';
+    function y(m){ return (clamp(m)-START*60)/60*H; }
+    if(nm>START*60) html+='<div class="past" style="height:'+y(nm)+'px"></div>';
+    var busy=busyBlocks(evs), allGaps=gapsFrom(busy, START*60);
+    allGaps.forEach(function(g){ var hgt=y(g[1])-y(g[0]); html+='<div class="gap" style="top:'+y(g[0])+'px;height:'+hgt+'px">'+(hgt>=18?"Free · "+fmtDur(g[1]-g[0]):"")+'</div>'; });
+    lanes(evs.concat(rems)).forEach(function(it){
+      if(it.e<=START*60||it.s>=END*60) return;
+      var top=y(it.s), hgt=Math.max(18,y(it.e)-y(it.s)-2), w=100/it.n;
+      var cls="ev"+(it.kind==="rem"?" rem":(it.optional?" opt":""))+((it.status==="Done")?" done":"");
+      var sub=fmtT(it.s)+(it.kind==="rem"?" · due":" – "+fmtT(it.e))+(it.loc?" · "+it.loc:"")+(it.optional&&it.kind!=="rem"?" · optional":"");
+      html+='<div class="'+cls+'" style="top:'+(top+1)+'px;height:'+hgt+'px;left:calc(46px + (100% - 46px)*'+(it.lane*w/100)+' + 2px);width:calc((100% - 46px)*'+(w/100)+' - 6px)" title="'+esc(it.t)+'"><b>'+esc(it.t)+'</b>'+(hgt>=30?'<small>'+esc(sub)+'</small>':'')+'</div>';
+    });
+    if(nm>=START*60&&nm<=END*60) html+='<div class="now" style="top:'+y(nm)+'px"><i>'+fmtT(nm)+'</i></div>';
+    tl.innerHTML=html;
+    // KPIs
+    var futGaps=gapsFrom(busy, nm), freeLeft=futGaps.reduce(function(a,g){return a+g[1]-g[0]},0);
+    var booked=busy.reduce(function(a,b){return a+b[1]-b[0]},0);
+    document.getElementById("kFree").textContent=nm>=END*60?"–":fmtDur(freeLeft);
+    document.getElementById("kBusy").textContent=booked?fmtDur(booked):"0h";
+    document.getElementById("kDue").textContent=day?list.length:"–";
+    // side panel
+    var cur=evs.filter(function(e){return !e.optional&&e.s<=nm&&e.e>nm})[0];
+    var next=evs.filter(function(e){return e.s>nm}).sort(function(a,b){return a.s-b.s})[0];
+    var s="";
+    s+='<div class="card"><h4>Right now</h4><div class="nowtxt">'+(cur?esc(cur.t)+'<small>until '+fmtT(cur.e)+'</small>':(nm>=END*60?'Day wrapped<small>see you tomorrow</small>':'Free'+(next?'<small>next: '+esc(next.t)+' at '+fmtT(next.s)+(next.optional?' (optional)':'')+'</small>':'<small>nothing else on the calendar</small>')))+'</div></div>';
+    s+='<div class="card"><h4>Open time</h4>'+(futGaps.length?futGaps.map(function(g){return '<div class="li"><span class="t">'+fmtT(g[0])+' – '+fmtT(g[1])+'</span><span class="g">'+fmtDur(g[1]-g[0])+'</span></div>'}).join(""):'<div class="muted">No open blocks of '+MIN_GAP+'m+ left today.</div>')+'</div>';
+    var order={"In progress":0,"Due today":1,"Overdue":2};
+    function rk(g){return order.hasOwnProperty(g)?order[g]:9} list.sort(function(a,b){return rk(a.group)-rk(b.group)});
+    s+='<div class="card"><h4>On deck</h4>'+(list.length?list.map(function(r){ var pc=r.group==="In progress"?"ip":(r.group==="Overdue"?"od":"td"); var t=r.link?'<a href="'+esc(r.link)+'" target="_blank" rel="noopener">'+esc(r.title)+'</a>':esc(r.title); return '<div class="li"><span><span class="pill '+pc+'">'+esc(r.group||r.status)+'</span>'+t+'</span><span class="src '+esc(r.source)+'">'+esc(r.source||"")+'</span></div>'}).join(""):'<div class="muted">'+(day?'Nothing due and nothing in progress.':'No feed for today yet.')+'</div>')+'</div>';
+    document.getElementById("side").innerHTML=s;
+    // footer
+    var a=document.getElementById("asof");
+    if(data&&data.generated){ var g=new Date(data.generated), ageH=(Date.now()-g)/36e5;
+      a.innerHTML='<span class="'+(ageH>8||!day?"stale":"")+'">Feed '+new Intl.DateTimeFormat("en-US",{weekday:"short",hour:"numeric",minute:"2-digit",timeZone:TZ}).format(g)+(data.by?' · '+esc(data.by):'')+(day?'':' · no entry for today')+'</span> · statuses live in the list below'; }
+  }
+  function show(j){ data=j; document.getElementById("err").hidden=true; render(); }
+  function loadLocal(){ return fetch(FILE+"?t="+Date.now(),{cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); }); }
+  function loadDrive(){
+    var list="https://www.googleapis.com/drive/v3/files?q="+encodeURIComponent("'"+DRIVE.folder+"' in parents and name='"+FILE+"' and trashed=false")+"&orderBy=modifiedTime desc&fields=files(id,modifiedTime)&pageSize=1&key="+DRIVE.key;
+    return fetch(list).then(function(r){return r.json()}).then(function(j){
+      if(!j.files||!j.files.length) throw new Error("no file");
+      return fetch("https://www.googleapis.com/drive/v3/files/"+j.files[0].id+"?alt=media&key="+DRIVE.key).then(function(r){return r.json()});
+    });
+  }
+  function load(){ loadDrive().then(show).catch(function(){ loadLocal().then(show).catch(function(e){ render(); var el=document.getElementById("err"); el.hidden=false; el.textContent="Day feed unavailable right now ("+e.message+")."; }); }); }
+  render(); load();
+  setInterval(render, 60*1000);          // move the now-line every minute
+  setInterval(load, 10*60*1000);         // re-read the feed every 10 minutes
+})();
+</script>
+</body>
+</html>

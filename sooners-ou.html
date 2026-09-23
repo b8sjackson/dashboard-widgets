@@ -32,6 +32,7 @@
   .rank{margin-left:auto;text-align:right}
   .rank .n{font-size:40px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
   .rank .n sup{font-size:18px;font-weight:600;color:var(--accent);vertical-align:top;margin-right:2px}
+  .rank .n .nr{font-size:28px;font-weight:700;letter-spacing:.06em;color:var(--muted)}
   .rank .p{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px}
   .grid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--grid)}
   .box .k{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -99,10 +100,46 @@
       tv:(comp.broadcasts||[]).map(function(b){return b.media&&b.media.shortName}).filter(Boolean).join("/"),
       venue:comp.venue?comp.venue.fullName:""};
   }
-  function render(team, sched){
-    var rankNum=team.rank||null;
-    if(!rankNum){ (sched.events||[]).some(function(e){ var us=e.competitions[0].competitors.find(function(c){return c.team.id===TEAM}); var r=us&&us.curatedRank&&us.curatedRank.current; if(r&&r<=25){rankNum=r;return true;} return false; }); }
-    document.getElementById("rank").innerHTML=rankNum?'<sup>#</sup>'+rankNum:'<sup></sup>NR';
+  function apStanding(polls, sched){
+    // AP Top 25 from the rankings endpoint is the ONLY current source.
+    // curatedRank on a PLAYED game is the rank we held that week and goes stale for the rest of the season.
+    if(polls && polls.rankings){
+      var ap=null;
+      polls.rankings.forEach(function(p){
+        if(!ap && (p.type==="ap" || /^AP\b/i.test(p.shortName||"") || /^AP Top/i.test(p.name||""))) ap=p;
+      });
+      if(ap){
+        var inTop=null;
+        (ap.ranks||[]).forEach(function(x){ if(!inTop && x.team && String(x.team.id)===TEAM) inTop=x; });
+        if(inTop && inTop.current>=1 && inTop.current<=25) return {rank:inTop.current, votes:null};
+        var rv=null;
+        (ap.others||[]).forEach(function(x){ if(!rv && x.team && String(x.team.id)===TEAM) rv=x; });
+        return {rank:null, votes:(rv && rv.points) ? Math.round(rv.points) : null};
+      }
+    }
+    // Fallback if the rankings feed is down: curatedRank on the NEXT UNPLAYED game
+    // tracks the current poll (ESPN uses 99 for unranked). Never read a completed game.
+    var next=null;
+    (sched.events||[]).slice().sort(function(a,b){return new Date(a.date)-new Date(b.date)}).forEach(function(e){
+      if(next) return; var s=e.competitions[0].status; if(!(s&&s.type&&s.type.completed)) next=e;
+    });
+    if(next){
+      var us=next.competitions[0].competitors.find(function(c){return c.team.id===TEAM});
+      var r=us&&us.curatedRank&&us.curatedRank.current;
+      if(r&&r>=1&&r<=25) return {rank:r, votes:null};
+    }
+    return {rank:null, votes:null};
+  }
+  function render(team, sched, polls){
+    var ap=apStanding(polls, sched);
+    var rankEl=document.getElementById("rank"), pollEl=document.getElementById("poll");
+    if(ap.rank){
+      rankEl.innerHTML='<sup>#</sup>'+ap.rank;
+      pollEl.textContent="AP Poll";
+    } else {
+      rankEl.innerHTML='<span class="nr">NR</span>';
+      pollEl.textContent=ap.votes?("AP \u00b7 "+ap.votes+" votes"):"AP Poll";
+    }
     var rec=(team.record&&team.record.items&&team.record.items[0]&&team.record.items[0].summary)||"0-0";
     document.getElementById("rec").textContent=rec.replace("-","–");
     var events=(sched.events||[]).slice().sort(function(a,b){return new Date(a.date)-new Date(b.date)});
@@ -149,8 +186,12 @@
     document.getElementById("err").hidden=true;
   }
   function load(){
-    Promise.all([fetch(BASE+"teams/"+TEAM).then(function(r){return r.json()}), fetch(BASE+"teams/"+TEAM+"/schedule").then(function(r){return r.json()})])
-      .then(function(res){ render(res[0].team, res[1]); })
+    Promise.all([
+      fetch(BASE+"teams/"+TEAM).then(function(r){return r.json()}),
+      fetch(BASE+"teams/"+TEAM+"/schedule").then(function(r){return r.json()}),
+      fetch(BASE+"rankings").then(function(r){return r.json()}).catch(function(){return null})
+    ])
+      .then(function(res){ render(res[0].team, res[1], res[2]); })
       .catch(function(e){ var el=document.getElementById("err"); el.hidden=false; el.textContent="Live data unavailable right now ("+e.message+")."; });
   }
   load(); setInterval(load, 5*60*1000);

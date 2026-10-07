@@ -48,8 +48,10 @@
   var WHAT=q.get("what")||"BKR Worldwide and Americas Conference";
   var WHERE=q.get("where")||"Sheraton Dallas";
   if(q.get("label")) document.getElementById("label").textContent=q.get("label");
-  var OFF="-05:00"; // Central Daylight Time through Nov 1, 2026
-  function at(d,t){return new Date(d+"T"+t+OFF);}
+  // Central time. The offset is worked out for each date, so a milestone set after daylight saving ends (Nov 1, 2026) is not an hour off.
+  var wallFmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+  function wall(x){var o={};wallFmt.formatToParts(x).forEach(function(p){o[p.type]=p.value});return o.hour+":"+o.minute;}
+  function at(d,t){var a=new Date(d+"T"+t+"-05:00");return wall(a)===t.slice(0,5)?a:new Date(d+"T"+t+"-06:00");}
   var s=at(START,"00:00:00"), e=at(END,"23:59:59"), f=at(FROM,"00:00:00");
   var fmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",month:"short",day:"numeric"});
   function span(){var a=fmt.format(s),b=fmt.format(e);return START===END?a:a+" to "+b;}

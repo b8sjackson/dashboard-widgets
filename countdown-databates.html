@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Countdown · DataBates</title>
+<style>
+  :root{
+    --bg:#1A0B2E; --bg2:#4A2482; --accent:#C9A961; --accent2:#FFF3D6;
+    --ink:#FAF8F3; --muted:#B9ADD0; --grid:rgba(201,169,97,0.07);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#191919}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;color:var(--ink)}
+  .frame{position:fixed;inset:0;border-radius:24px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:
+      linear-gradient(var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/30px 30px,
+      radial-gradient(120% 90% at 0% 100%,var(--bg2),var(--bg) 70%);
+  }
+  .card{padding:20px 24px;width:100%;max-width:520px}
+  .label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .big{font-family:"Times New Roman",Times,Tinos,serif;font-size:56px;line-height:1.02;margin-top:6px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .big small{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Inter,Segoe UI,sans-serif;font-size:17px;font-weight:600;color:var(--muted);margin:0 10px 0 3px;letter-spacing:.04em}
+  .what{font-size:15px;font-weight:600;margin-top:10px}
+  .sub{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .bar{height:3px;border-radius:3px;background:rgba(255,255,255,.10);margin-top:14px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .6s ease}
+  .foot{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:7px;font-variant-numeric:tabular-nums}
+  @media (max-width:300px){.big{font-size:44px}.card{padding:18px}}
+</style>
+</head>
+<body>
+<div class="frame"><div class="card">
+  <div class="label" id="label">DataBates · Go-live</div>
+  <div class="big" id="big">--</div>
+  <div class="what" id="what">&nbsp;</div>
+  <div class="sub" id="sub">&nbsp;</div>
+  <div class="bar"><i id="fill"></i></div>
+  <div class="foot"><span id="f1">&nbsp;</span><span id="f2">&nbsp;</span></div>
+</div></div>
+<script>
+(function(){
+  // Defaults: BKR Worldwide and Americas Conference, Sheraton Dallas, Oct 23 to 26, 2026 (Central).
+  // Override on the URL: ?start=2027-01-15&end=2027-01-15&from=2026-10-06&what=...&where=...&label=...
+  var q=new URLSearchParams(location.search);
+  var START=q.get("start")||"2026-10-23", END=q.get("end")||"2026-10-26", FROM=q.get("from")||"2026-10-06";
+  var WHAT=q.get("what")||"BKR Worldwide and Americas Conference";
+  var WHERE=q.get("where")||"Sheraton Dallas";
+  if(q.get("label")) document.getElementById("label").textContent=q.get("label");
+  var OFF="-05:00"; // Central Daylight Time through Nov 1, 2026
+  function at(d,t){return new Date(d+"T"+t+OFF);}
+  var s=at(START,"00:00:00"), e=at(END,"23:59:59"), f=at(FROM,"00:00:00");
+  var fmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",month:"short",day:"numeric"});
+  function span(){var a=fmt.format(s),b=fmt.format(e);return START===END?a:a+" to "+b;}
+  function $(id){return document.getElementById(id);}
+  function tick(){
+    var now=new Date(), big=$("big");
+    $("what").textContent=WHAT;
+    if(now<s){
+      var ms=s-now, d=Math.floor(ms/864e5), h=Math.floor(ms%864e5/36e5), m=Math.floor(ms%36e5/6e4);
+      big.innerHTML=d>0?(d+"<small>d</small>"+h+"<small>h</small>"):(h+"<small>h</small>"+m+"<small>m</small>");
+      $("sub").textContent=WHERE+" · "+span();
+      var pct=Math.max(0,Math.min(1,(now-f)/(s-f)));
+      $("fill").style.width=(pct*100).toFixed(1)+"%";
+      $("f1").textContent="until it opens";
+      $("f2").textContent=Math.round(pct*100)+"% of the runway used";
+    }else if(now<=e){
+      var day=Math.floor((now-s)/864e5)+1, total=Math.round((e-s)/864e5);
+      big.innerHTML="Day "+day+"<small>of "+total+"</small>";
+      $("sub").textContent=WHERE+" · "+span();
+      $("fill").style.width=(day/total*100)+"%";
+      $("f1").textContent="live now";$("f2").textContent="";
+    }else{
+      var since=Math.floor((now-e)/864e5);
+      big.innerHTML=since+"<small>d ago</small>";
+      $("sub").textContent=WHERE+" · "+span();
+      $("fill").style.width="100%";
+      $("f1").textContent="wrapped";$("f2").textContent="set the next milestone";
+    }
+  }
+  tick();setInterval(tick,30000);
+})();
+</script>
+</body>
+</html>

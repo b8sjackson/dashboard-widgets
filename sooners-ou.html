@@ -140,7 +140,7 @@
       rankEl.innerHTML='<span class="nr">NR</span>';
       pollEl.textContent=ap.votes?("AP \u00b7 "+ap.votes+" votes"):"AP Poll";
     }
-    var rec=(team.record&&team.record.items&&team.record.items[0]&&team.record.items[0].summary)||"0-0";
+    var rec=(team.recordSummary)||(team.record&&team.record.items&&team.record.items[0]&&team.record.items[0].summary)||"0-0";
     document.getElementById("rec").textContent=rec.replace("-","–");
     var events=(sched.events||[]).slice().sort(function(a,b){return new Date(a.date)-new Date(b.date)});
     var now=new Date();
@@ -186,12 +186,13 @@
     document.getElementById("err").hidden=true;
   }
   function load(){
+    // 2026-10-18: ESPN dropped the CORS header on teams/{id}, which blanked the widget.
+    // The schedule feed carries team.recordSummary and team.standingSummary, so it is the only team source now.
     Promise.all([
-      fetch(BASE+"teams/"+TEAM).then(function(r){return r.json()}),
-      fetch(BASE+"teams/"+TEAM+"/schedule").then(function(r){return r.json()}),
-      fetch(BASE+"rankings").then(function(r){return r.json()}).catch(function(){return null})
+      fetch(BASE+"teams/"+TEAM+"/schedule",{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("schedule "+r.status);return r.json()}),
+      fetch(BASE+"rankings",{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})
     ])
-      .then(function(res){ render(res[0].team, res[1], res[2]); })
+      .then(function(res){ render(res[0].team||{}, res[0], res[1]); })
       .catch(function(e){ var el=document.getElementById("err"); el.hidden=false; el.textContent="Live data unavailable right now ("+e.message+")."; });
   }
   load(); setInterval(load, 5*60*1000);

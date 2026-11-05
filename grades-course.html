@@ -51,6 +51,22 @@
   .flag{font-size:11px;color:var(--muted);padding:5px 8px;border-left:2px solid var(--warn);margin:4px 0;line-height:1.45}
   .empty{font-size:12px;color:var(--muted);padding:8px 6px}
   .err{font-size:12px;color:var(--muted);margin-top:8px}
+  .fin{margin-top:6px}
+  .ftrack{position:relative;height:12px;border-radius:6px;background:rgba(255,255,255,.08);margin:18px 0 6px}
+  .fband{position:absolute;top:0;bottom:0;border-radius:6px;background:rgba(255,255,255,.2)}
+  .fnow{position:absolute;top:-3px;bottom:-3px;width:4px;margin-left:-2px;border-radius:2px;background:var(--ink)}
+  .ftick{position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(255,255,255,.5)}
+  .ftick span{position:absolute;top:-14px;left:-8px;width:17px;text-align:center;font-size:9px;font-weight:700;color:var(--muted)}
+  .frange{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);letter-spacing:.04em;font-variant-numeric:tabular-nums}
+  .fline{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:baseline;padding:6px 6px;border-bottom:1px solid var(--grid);font-size:12px;font-variant-numeric:tabular-nums}
+  .fline:last-child{border-bottom:none}
+  .fline .fc{color:var(--muted);font-size:10px}
+  .fline .fn{font-weight:700;text-align:right}.fline .fn small{display:block;color:var(--muted);font-weight:500;font-size:10px}
+  .fn.g{color:var(--good)}.fn.w{color:var(--warn)}.fn.b{color:var(--bad)}.fn.x{color:var(--muted)}
+  .fleft{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:5px 6px;font-size:12px;border-bottom:1px solid var(--grid);font-variant-numeric:tabular-nums}
+  .fleft:last-child{border-bottom:none}
+  .fleft b{font-weight:700}.fleft span{color:var(--muted);font-size:11px}
+  .fnote{font-size:11px;color:var(--muted);padding:5px 6px;line-height:1.45}.fnote b{color:var(--ink);font-weight:600}
   .rule{height:2px;margin-top:10px;background:linear-gradient(90deg,var(--accent),transparent);opacity:.8;border-radius:2px}
   .foot{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:8px;letter-spacing:.04em}
   a{color:var(--accent);text-decoration:none}
@@ -65,7 +81,7 @@
   <div id="body"></div>
   <div class="err" id="err" hidden></div>
   <div class="rule"></div>
-  <div class="foot"><span id="src">Notion · Canvas</span><span id="upd"></span></div>
+  <div class="foot"><span id="src">Syllabus grades, Canvas scores</span><span id="upd"></span></div>
 </div></div>
 <script>
 (function(){
@@ -88,15 +104,40 @@
   function fmtDate(s){ if(!s) return ""; var d=new Date(s+(s.length===10?"T12:00:00":"")); return new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",timeZone:TZ}).format(d); }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}); }
 
+  function finishHtml(c){
+    var f=c.finish; if(!f) return "";
+    var pos=function(v){return Math.max(0,Math.min(100,v))};
+    var html='<div class="sec">Finish line</div><div class="fin">';
+    html+='<div class="ftrack"><div class="fband" style="left:'+pos(f.floor)+'%;width:'+(pos(f.maxBonus)-pos(f.floor))+'%"></div>';
+    f.lines.forEach(function(l){ if(l.letter!=="D") html+='<div class="ftick" style="left:'+pos(l.cutoff)+'%"><span>'+esc(l.letter)+'</span></div>'; });
+    if(c.grade!=null) html+='<div class="fnow" style="left:'+pos(c.grade)+'%"></div>';
+    html+='</div><div class="frange"><span>Zero on the rest: '+fmtPct(f.floor)+'</span><span>Now: '+fmtPct(c.grade)+'</span><span>Perfect the rest: '+fmtPct(f.maxBonus)+'</span></div>';
+    f.lines.forEach(function(l){
+      if(l.letter==="D") return;
+      var v,cl,sub="";
+      if(l.state==="secured"){v="Locked in";cl="g";}
+      else if(l.state==="out"){v="Out of reach";cl="x";sub="best finish "+fmtPct(f.maxBonus);}
+      else if(l.state==="bonus"){v=l.needBonus+"%";cl="b";sub="only with all the bonus";}
+      else {v=l.need+"%";cl=l.need>90?"b":(l.need>75?"w":"g");if(l.needBonus!=null&&l.needBonus!==l.need)sub=l.needBonus+"% with all the bonus";}
+      html+='<div class="fline"><span class="letter '+l.letter+'">'+l.letter+'</span><span class="fc">'+esc(l.label)+(l.state==="need"||l.state==="bonus"?' · needed on what\'s left':'')+'</span><span class="fn '+cl+'">'+v+(sub?'<small>'+esc(sub)+'</small>':'')+'</span></div>';
+    });
+    html+='</div>';
+    if(f.left&&f.left.length){ html+='<div class="sec">What\'s left</div>'; f.left.forEach(function(i){ html+='<div class="fleft"><div>'+esc(i.item)+'</div><span>'+(i.date?esc(fmtDate(i.date)):'')+'</span><b>'+fmtPct(i.worth)+'%</b></div>'; }); }
+    if(f.bonus) html+='<div class="fnote"><b>Bonus:</b> '+esc(f.bonus.earned)+' earned, '+esc(f.bonus.left)+' open. '+esc(f.bonus.note)+'</div>';
+    if(f.drops) html+='<div class="fnote"><b>Drops:</b> '+esc(f.drops)+'</div>';
+    if(f.note) html+='<div class="fnote">'+esc(f.note)+'</div>';
+    return html;
+  }
   function classView(c){
     var k=letterKey(c.letter), g=c.grade, gp=fmtPct(c.gradedPct);
     document.getElementById("lbl").textContent=(c.short||"Course")+" · "+(c.term||"Fall 2026");
     document.getElementById("ttl").textContent=c.full||c.name;
     var html='<div class="hero"><div class="big">'+(g==null?'<span style="color:var(--muted);font-size:26px">'+esc(c.mode==="Unknown"?"No Canvas data":"Not graded yet")+'</span>':fmtPct(g)+'<sup>%</sup>')+'</div>'+
       '<div class="meta"><span class="letter '+k+'">'+esc(k==="x"?"tbd":c.letter)+'</span><b>'+esc(c.prof||"")+'</b> · '+(c.credits||3)+' hrs<br>'+
-      esc(c.mode)+(c.points?" grading, out of "+c.points:" grading")+(c.cutoffs?'<br>Cutoffs: '+esc(c.cutoffs):'')+'</div></div>';
-    html+='<div class="bar '+barClass(g)+'"><i style="width:'+(g==null?0:Math.max(0,Math.min(100,g)))+'%"></i><em style="left:90%"></em><em style="left:80%"></em><em style="left:70%"></em></div>';
+      esc(c.mode)+(c.points?" grading, out of "+c.points:" grading")+" · from the syllabus"+(c.cutoffs?'<br>Cutoffs: '+esc(c.cutoffs):'')+'</div></div>';
+    if(!c.finish) html+='<div class="bar '+barClass(g)+'"><i style="width:'+(g==null?0:Math.max(0,Math.min(100,g)))+'%"></i><em style="left:90%"></em><em style="left:80%"></em><em style="left:70%"></em></div>';
     html+='<div class="cov"><span>'+(gp==null?"coverage unknown":"<b>"+gp+"%</b> of the course graded so far")+'</span><span>refreshed '+esc(fmtDate(c.refreshed))+'</span></div>';
+    html+=finishHtml(c);
     if(c.flags&&c.flags.length){ html+='<div class="sec">Watch</div>'; c.flags.forEach(function(f){ html+='<div class="flag">'+esc(f)+'</div>'; }); }
     html+='<div class="sec">Categories</div>';
     if(c.categories&&c.categories.length){
@@ -122,7 +163,7 @@
     var c=(j.courses||[]).filter(function(x){return String(x.id)===String(COURSE)})[0];
     if(!c){ throw new Error("course "+COURSE+" not in feed"); }
     c.term=j.term; classView(c);
-    document.getElementById("src").textContent=(j.source||"Notion")+" · Canvas";
+    document.getElementById("src").textContent=(j.source||"Notion");
     document.getElementById("upd").textContent="Updated "+new Intl.DateTimeFormat("en-US",{timeZone:TZ,month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(j.updated));
     document.getElementById("err").hidden=true;
   }
